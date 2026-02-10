@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "My App"
+  },
+  "nav": {
+  "join": "JOIN",
+  "signIn": " SIGN IN",
+  "freeAccess": "Free access begins now. 3-day preview included."
+  },
+
+  "joinModal": {
+    "title": "Join OB33Z",
+    "subtitle": "Create your account to continue",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "info": "Free access begins now. 3-day preview included.",
+    "joinCta": "JOIN",
+    "haveAccount": "Already have an account?",
+    "signInLink": "SIGN IN"
+  },
+  "home": {
+    "title1": "This is main Page",
+    "title2": "Tailwind v4 is Working!",
+    "subtitle": "This is your home page.",
+    "goAbout": "Go to About"
+  },
+  "about": {
+    "title": "About Us",
+    "content": "This is the about page content."
+  },
+  "signup": {
+    "title": "Sign Up",
+    "content": "This is the sign up page."
+  }
+}
+

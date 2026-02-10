@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "Mi Aplicación"
+  },
+   "nav": {
+  "join": "UNIRSE",
+  "signIn": "INICIAR SESIÓN",
+  "freeAccess": "El acceso gratuito comienza ahora. Incluye una vista previa de 3 días."
+   },
+  "joinModal": {
+    "title": "Únete a OB33Z",
+    "subtitle": "Crea tu cuenta para continuar",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Ingresa tu nombre completo",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "info": "El acceso gratuito comienza ahora. Incluye una prueba de 3 días.",
+    "joinCta": "UNIRSE",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "signInLink": "INICIAR SESIÓN"
+  },
+
+  "home": {
+    "title1": "Esta es la página principal",
+    "title2": "¡Tailwind v4 está funcionando!",
+    "subtitle": "Esta es tu página de inicio.",
+    "goAbout": "Ir a Acerca de"
+  },
+  "about": {
+    "title": "Sobre nosotros",
+    "content": "Este es el contenido de la página Acerca de."
+  },
+  "signup": {
+    "title": "Registrarse",
+    "content": "Esta es la página de registro."
+  }
+}
+
