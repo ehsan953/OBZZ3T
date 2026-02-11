@@ -1,5 +1,9 @@
 <template>
   <div class="relative min-h-screen overflow-hidden bg-[#050608]">
+    <!-- Language selector only on the entry page -->
+    <div class="fixed left-6 top-6 z-[9999]">
+      <LanguageSelector />
+    </div>
     <!-- Cursor-follow small radial glow -->
     <div
       ref="cursorGlow"
