@@ -42,19 +42,14 @@
 
         <!-- Buttons block (fade in after logo) -->
         <div class="mt-10 flex flex-col items-center gap-4 buttons-animate">
-          <NuxtLink
-            to="/lounge"
+          <!-- JOIN opens Join modal on the entry page -->
+          <button
+            type="button"
+            @click="isJoinOpen = true"
             class="w-[260px] rounded-lg bg-[#C9A24D] px-6 py-3 text-sm font-semibold tracking-widest text-black shadow-[0_0_0_1px_rgba(201,162,77,0.25),0_18px_40px_rgba(0,0,0,0.55)] transition hover:brightness-110 active:scale-[0.99]"
           >
-            {{ t("nav.enter") }}
-          </NuxtLink>
-
-          <NuxtLink
-            to="/lounge"
-            class="w-[260px] rounded-lg border border-[#C9A24D]/80 bg-transparent px-6 py-3 text-sm font-semibold tracking-widest text-[#C9A24D] shadow-[0_0_0_1px_rgba(201,162,77,0.10)] transition hover:bg-[#C9A24D]/10 active:scale-[0.99]"
-          >
             {{ t("nav.join") }}
-          </NuxtLink>
+          </button>
 
           <NuxtLink
             to="/lounge"
