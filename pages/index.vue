@@ -51,12 +51,13 @@
             {{ t("nav.join") }}
           </button>
 
-          <NuxtLink
-            to="/lounge"
-            class="w-[260px] rounded-lg bg-transparent px-6 py-3 text-sm font-roboto font-medium tracking-widest text-[#C9A24D] border border-[#C9A24D] shadow-[0_0_0_1px_rgba(201,162,77,0.10)] transition hover:bg-[#C9A24D]/10 active:scale-[0.99] mb-[48px]"
+          <button
+            type="button"
+            @click="handleEnter('/lounge')"
+            class="w-[260px] rounded-lg bg-transparent px-6 py-3 text-sm font-roboto font-medium tracking-widest text-[#F4F2ED] shadow-[0_0_0_1px_rgba(201,162,77,0.10)] transition hover:bg-[#C9A24D]/10 active:scale-[0.99] mb-[48px]"
           >
             {{ t("nav.signIn") }}
-          </NuxtLink>
+          </button>
         </div>
 
         <!-- Subtitle (last, subtle fade-in) -->
@@ -85,8 +86,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "#imports";
+import { useTransitionScreen } from "~/composables/useTransitionScreen";
 
 const { t } = useI18n();
+const { startTransition } = useTransitionScreen();
+
 const cursorGlow = ref<HTMLElement | null>(null);
 const isJoinOpen = ref(false);
 
@@ -121,6 +125,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("mousemove", onMouseMove);
 });
+
+const handleEnter = (path: string) => {
+  startTransition(path);
+};
 </script>
 
 <style scoped>
