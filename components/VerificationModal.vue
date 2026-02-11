@@ -1,0 +1,333 @@
+<template>
+  <Teleport to="body">
+    <Transition name="modal-backdrop">
+      <div
+        v-if="isOpen"
+        v-motion="backdropMotion"
+        class="fixed inset-0 bg-[rgba(11,11,13,0.95)] backdrop-blur-sm z-50 flex items-center justify-center p-6"
+        @click="step !== 'success' && $emit('close')"
+      >
+        <div
+          v-motion="modalMotion"
+          class="w-full max-w-md"
+          @click.stop
+        >
+          <OB33ZCard :glow="true">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#C9A24D] to-[#5B3FD6] flex items-center justify-center">
+                  <svg class="w-5 h-5 text-[#0B0B0D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl text-[#C9A24D]">{{ t('verifyAccount') }}</h2>
+                  <p class="text-sm text-[#F4F2ED] opacity-60">{{ t('unlockAllFeatures') }}</p>
+                </div>
+              </div>
+              <button
+                v-if="step !== 'success'"
+                @click="$emit('close')"
+                class="text-[#F4F2ED] opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <Transition name="step" mode="out-in">
+              <!-- Method Selection -->
+              <div v-if="step === 'method'" key="method" class="space-y-3">
+                <p class="text-sm text-[#F4F2ED] opacity-80 mb-4">
+                  {{ t('chooseVerificationMethod') }}
+                </p>
+
+                <button
+                  v-motion="{ initial: { scale: 1 }, enter: { scale: 1 } }"
+                  @click="step = 'email'"
+                  class="w-full p-4 rounded-lg bg-[rgba(244,242,237,0.02)] border border-[rgba(201,162,77,0.15)] hover:border-[#C9A24D] hover:bg-[rgba(201,162,77,0.05)] transition-all text-left"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[rgba(201,162,77,0.2)] flex items-center justify-center">
+                      <svg class="w-5 h-5 text-[#C9A24D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="text-[#F4F2ED] font-medium mb-1">{{ t('emailVerification') }}</div>
+                      <div class="text-xs text-[#F4F2ED] opacity-60">{{ t('verifyViaEmail') }}</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  v-motion="{ initial: { scale: 1 }, enter: { scale: 1 } }"
+                  @click="step = 'phone'"
+                  class="w-full p-4 rounded-lg bg-[rgba(244,242,237,0.02)] border border-[rgba(201,162,77,0.15)] hover:border-[#C9A24D] hover:bg-[rgba(201,162,77,0.05)] transition-all text-left"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[rgba(201,162,77,0.2)] flex items-center justify-center">
+                      <svg class="w-5 h-5 text-[#C9A24D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="text-[#F4F2ED] font-medium mb-1">{{ t('phoneVerification') }}</div>
+                      <div class="text-xs text-[#F4F2ED] opacity-60">{{ t('verifyViaPhone') }}</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  v-motion="{ initial: { scale: 1 }, enter: { scale: 1 } }"
+                  @click="step = 'photo'"
+                  class="w-full p-4 rounded-lg bg-[rgba(244,242,237,0.02)] border border-[rgba(201,162,77,0.15)] hover:border-[#C9A24D] hover:bg-[rgba(201,162,77,0.05)] transition-all text-left"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[rgba(201,162,77,0.2)] flex items-center justify-center">
+                      <svg class="w-5 h-5 text-[#C9A24D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="text-[#F4F2ED] font-medium mb-1">{{ t('photoVerification') }}</div>
+                      <div class="text-xs text-[#F4F2ED] opacity-60">{{ t('verifyViaPhoto') }}</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Email Verification -->
+              <div v-else-if="step === 'email'" key="email" class="space-y-4">
+                <div>
+                  <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
+                    {{ t('emailAddress') }}
+                  </label>
+                  <div class="relative">
+                    <svg
+                      class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F4F2ED] opacity-40"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <OB33ZInput
+                      v-model="verificationData.email"
+                      type="email"
+                      :placeholder="t('enterEmail')"
+                      class="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
+                    {{ t('verificationCode') }}
+                  </label>
+                  <OB33ZInput
+                    v-model="verificationData.code"
+                    type="text"
+                    :placeholder="t('enterCode')"
+                    maxlength="6"
+                  />
+                </div>
+
+                <div class="p-3 rounded-lg bg-[rgba(91,63,214,0.1)] border border-[rgba(91,63,214,0.2)]">
+                  <p class="text-xs text-[#F4F2ED] opacity-80">
+                    {{ t('verificationCodeSent') }}
+                  </p>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                  <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
+                    {{ t('back') }}
+                  </OB33ZButton>
+                  <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
+                    {{ t('verify') }}
+                  </OB33ZButton>
+                </div>
+              </div>
+
+              <!-- Phone Verification -->
+              <div v-else-if="step === 'phone'" key="phone" class="space-y-4">
+                <div>
+                  <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
+                    {{ t('phoneNumber') }}
+                  </label>
+                  <div class="relative">
+                    <svg
+                      class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F4F2ED] opacity-40"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <OB33ZInput
+                      v-model="verificationData.phone"
+                      type="tel"
+                      :placeholder="t('enterPhone')"
+                      class="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
+                    {{ t('verificationCode') }}
+                  </label>
+                  <OB33ZInput
+                    v-model="verificationData.code"
+                    type="text"
+                    :placeholder="t('enterCode')"
+                    maxlength="6"
+                  />
+                </div>
+
+                <div class="p-3 rounded-lg bg-[rgba(91,63,214,0.1)] border border-[rgba(91,63,214,0.2)]">
+                  <p class="text-xs text-[#F4F2ED] opacity-80">
+                    {{ t('verificationCodeSent') }}
+                  </p>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                  <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
+                    {{ t('back') }}
+                  </OB33ZButton>
+                  <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
+                    {{ t('verify') }}
+                  </OB33ZButton>
+                </div>
+              </div>
+
+              <!-- Photo Verification -->
+              <div v-else-if="step === 'photo'" key="photo" class="space-y-4">
+                <div class="border-2 border-dashed border-[rgba(201,162,77,0.3)] rounded-lg p-8 text-center">
+                  <svg
+                    class="w-12 h-12 text-[#C9A24D] mx-auto mb-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <p class="text-sm text-[#F4F2ED] mb-2">{{ t('uploadPhoto') }}</p>
+                  <p class="text-xs text-[#F4F2ED] opacity-60 mb-4">
+                    {{ t('photoInstructions') }}
+                  </p>
+                  <OB33ZButton variant="secondary">
+                    {{ t('chooseFile') }}
+                  </OB33ZButton>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                  <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
+                    {{ t('back') }}
+                  </OB33ZButton>
+                  <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
+                    {{ t('submit') }}
+                  </OB33ZButton>
+                </div>
+              </div>
+
+              <!-- Success -->
+              <div v-else-if="step === 'success'" key="success" class="text-center py-8">
+                <div
+                  v-motion="successMotion"
+                  class="w-20 h-20 rounded-full bg-gradient-to-br from-[#C9A24D] to-[#5B3FD6] flex items-center justify-center mx-auto mb-4"
+                >
+                  <svg class="w-10 h-10 text-[#0B0B0D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 class="text-xl text-[#C9A24D] mb-2">{{ t('verificationSuccess') }}</h3>
+                <p class="text-sm text-[#F4F2ED] opacity-80">{{ t('youAreNowVerified') }}</p>
+              </div>
+            </Transition>
+          </OB33ZCard>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { useLanguage } from "#imports";
+
+const { t } = useLanguage();
+
+interface Props {
+  isOpen: boolean;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  close: [];
+  verify: [];
+}>();
+
+const step = ref<"method" | "email" | "phone" | "photo" | "success">("method");
+const verificationData = ref({
+  email: "",
+  phone: "",
+  code: "",
+});
+
+const handleSubmitCode = () => {
+  step.value = "success";
+  setTimeout(() => {
+    emit("verify");
+    emit("close");
+  }, 2000);
+};
+
+const backdropMotion = {
+  initial: { opacity: 0 },
+  enter: { opacity: 1, transition: { duration: 0.2 } },
+  leave: { opacity: 0, transition: { duration: 0.2 } },
+};
+
+const modalMotion = {
+  initial: { scale: 0.9, opacity: 0, y: 20 },
+  enter: { scale: 1, opacity: 1, y: 0, transition: { duration: 0.3 } },
+  leave: { scale: 0.9, opacity: 0, y: 20, transition: { duration: 0.2 } },
+};
+
+const successMotion = {
+  initial: { scale: 0 },
+  enter: {
+    scale: 1,
+    transition: { delay: 0.2, type: "spring", stiffness: 200 },
+  },
+};
+</script>
+
+<style scoped>
+.modal-backdrop-enter-active,
+.modal-backdrop-leave-active {
+  transition: opacity 0.2s;
+}
+.modal-backdrop-enter-from,
+.modal-backdrop-leave-to {
+  opacity: 0;
+}
+
+.step-enter-active,
+.step-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.step-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.step-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+</style>

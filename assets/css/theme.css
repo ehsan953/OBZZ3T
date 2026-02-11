@@ -1,0 +1,180 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  
+  /* OB33Z Color Palette */
+  --obsidian-black: #0B0B0D;
+  --ivory-white: #F4F2ED;
+  --champagne-gold: #C9A24D;
+  --amethyst-purple: #5B3FD6;
+  
+  /* Base colors using OB33Z palette */
+  --background: var(--obsidian-black);
+  --foreground: var(--ivory-white);
+  --card: rgba(11, 11, 13, 0.8);
+  --card-foreground: var(--ivory-white);
+  --popover: rgba(11, 11, 13, 0.95);
+  --popover-foreground: var(--ivory-white);
+  --primary: var(--champagne-gold);
+  --primary-foreground: var(--obsidian-black);
+  --secondary: rgba(201, 162, 77, 0.1);
+  --secondary-foreground: var(--ivory-white);
+  --muted: rgba(244, 242, 237, 0.1);
+  --muted-foreground: rgba(244, 242, 237, 0.6);
+  --accent: var(--champagne-gold);
+  --accent-foreground: var(--obsidian-black);
+  --destructive: #dc2626;
+  --destructive-foreground: var(--ivory-white);
+  --border: rgba(201, 162, 77, 0.15);
+  --input: rgba(244, 242, 237, 0.1);
+  --input-background: rgba(244, 242, 237, 0.05);
+  --switch-background: rgba(244, 242, 237, 0.2);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: var(--champagne-gold);
+  --chart-1: var(--champagne-gold);
+  --chart-2: var(--amethyst-purple);
+  --chart-3: rgba(201, 162, 77, 0.7);
+  --chart-4: rgba(91, 63, 214, 0.7);
+  --chart-5: rgba(244, 242, 237, 0.5);
+  --radius: 0.5rem;
+  
+  /* Amethyst glow effects */
+  --glow-purple: rgba(91, 63, 214, 0.2);
+  --glow-purple-strong: rgba(91, 63, 214, 0.4);
+  
+  /* Additional UI variables */
+  --sidebar: var(--obsidian-black);
+  --sidebar-foreground: var(--ivory-white);
+  --sidebar-primary: var(--champagne-gold);
+  --sidebar-primary-foreground: var(--obsidian-black);
+  --sidebar-accent: rgba(201, 162, 77, 0.1);
+  --sidebar-accent-foreground: var(--ivory-white);
+  --sidebar-border: rgba(201, 162, 77, 0.15);
+  --sidebar-ring: var(--champagne-gold);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Custom OB33Z colors */
+  --color-obsidian-black: var(--obsidian-black);
+  --color-ivory-white: var(--ivory-white);
+  --color-champagne-gold: var(--champagne-gold);
+  --color-amethyst-purple: var(--amethyst-purple);
+  --color-glow-purple: var(--glow-purple);
+  --color-glow-purple-strong: var(--glow-purple-strong);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-color: var(--obsidian-black);
+    color: var(--ivory-white);
+    /* Subtle grain texture */
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.01) 2px,
+        rgba(255, 255, 255, 0.01) 4px
+      );
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+  }
+
+  h4 {
+    font-size: 1rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: 1rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: 1rem;
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}

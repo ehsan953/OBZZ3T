@@ -1,39 +1,51 @@
-<!-- components/LanguageToggle.vue -->
 <template>
   <div
-    class="relative flex items-center gap-3 rounded-lg p-1 bg-[rgba(244,242,237,0.05)] border border-[rgba(201,162,77,0.15)]"
+    class="flex items-center gap-2 bg-[rgba(244,242,237,0.05)] rounded-lg p-1 border border-[rgba(201,162,77,0.15)]"
   >
-    <!-- Sliding indicator -->
-    <div
-      class="absolute top-[4px] left-[4px] h-[28px] w-[44px] rounded-md bg-[#C9A24D] transition-transform duration-300 ease-out"
-      :class="indicatorClass"
-    />
-
-    <!-- EN -->
     <button
-      type="button"
-      @click="setLang('en')"
-      class="relative z-10 px-3 py-1 text-sm"
+      @click="setLanguage('en')"
+      class="relative px-3 py-1 text-sm transition-colors duration-200"
     >
+      <div
+        v-if="language === 'en'"
+        v-motion="{
+          initial: false,
+          enter: {
+            x: 0,
+            transition: { type: 'spring', duration: 0.5 },
+          },
+        }"
+        class="absolute inset-0 bg-[#C9A24D] rounded-md"
+      />
       <span
-        :class="
-          locale === 'en' ? 'text-[#0B0B0D]' : 'text-[#F4F2ED] opacity-60'
-        "
+        :class="[
+          'relative z-10',
+          language === 'en' ? 'text-[#0B0B0D]' : 'text-[#F4F2ED] opacity-60',
+        ]"
       >
         EN
       </span>
     </button>
-
-    <!-- ES -->
     <button
-      type="button"
-      @click="setLang('es')"
-      class="relative z-10 px-3 py-1 text-sm"
+      @click="setLanguage('es')"
+      class="relative px-3 py-1 text-sm transition-colors duration-200"
     >
+      <div
+        v-if="language === 'es'"
+        v-motion="{
+          initial: false,
+          enter: {
+            x: 0,
+            transition: { type: 'spring', duration: 0.5 },
+          },
+        }"
+        class="absolute inset-0 bg-[#C9A24D] rounded-md"
+      />
       <span
-        :class="
-          locale === 'es' ? 'text-[#0B0B0D]' : 'text-[#F4F2ED] opacity-60'
-        "
+        :class="[
+          'relative z-10',
+          language === 'es' ? 'text-[#0B0B0D]' : 'text-[#F4F2ED] opacity-60',
+        ]"
       >
         ES
       </span>
@@ -42,23 +54,9 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "#imports";
+import { useLanguage } from "#imports";
 
-const { locale, setLocale } = useI18n();
-
-function setLang(lang: "en" | "es") {
-  if (locale.value === lang) return;
-  setLocale(lang);
-}
-
-/**
- * Exact movement:
- * - EN: x = 0
- * - ES: button width (44) + gap (8) = 52px
- */
-const indicatorClass = computed(() =>
-  locale.value === "en" ? "translate-x-0" : "translate-x-[52px]"
-);
+const { language, setLanguage } = useLanguage();
 </script>
 
 <style scoped>

@@ -13,6 +13,15 @@ const fullName = ref("");
 const email = ref("");
 const password = ref("");
 
+const isAuthOpen = ref(false);
+
+const openSignIn = () => {
+  // Close Join modal first (so AuthModal isn't behind it)
+  close();
+  // Then open AuthModal in signin mode
+  isAuthOpen.value = true;
+};
+
 const onKeydown = (e: KeyboardEvent) => {
   if (e.key === "Escape") close();
 };
@@ -254,13 +263,13 @@ const onKeydown = (e: KeyboardEvent) => {
                 class="mt-6 sm:mt-7 border-t border-white/10 pt-4 sm:pt-5 text-center text-[13px] sm:text-sm text-white/45"
               >
                 {{ t("joinModal.haveAccount") }}
-                <NuxtLink
-                  to="/auth/signin"
+                <button
+                  type="button"
                   class="ml-2 font-semibold text-[#C9A24D] hover:opacity-90"
-                  @click="close"
+                  @click="openSignIn"
                 >
                   {{ t("joinModal.signInLink") }}
-                </NuxtLink>
+                </button>
               </div>
             </div>
           </div>
@@ -268,6 +277,13 @@ const onKeydown = (e: KeyboardEvent) => {
       </div>
     </Transition>
   </Teleport>
+
+  <!-- React-equivalent: sign-in happens in AuthModal, not via a route -->
+  <AuthModal
+    :isOpen="isAuthOpen"
+    initialMode="signin"
+    @close="isAuthOpen = false"
+  />
 </template>
 
 <style scoped>

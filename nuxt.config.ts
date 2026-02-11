@@ -23,7 +23,7 @@ export default defineNuxtConfig({
   },
 
   vite: { plugins: [tailwindcss()] },
-  modules: ["@pinia/nuxt", "@nuxtjs/i18n"],
+  modules: ["@pinia/nuxt", "@nuxtjs/i18n", "@vueuse/motion/nuxt"],
   
   i18n: {
     strategy: "no_prefix",
