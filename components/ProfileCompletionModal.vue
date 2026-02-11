@@ -205,8 +205,6 @@ interface Props {
   isOpen: boolean;
 }
 
-defineProps<Props>();
-
 const emit = defineEmits<{
   close: [];
   complete: [profileData: {

@@ -306,6 +306,13 @@
         </OB33ZCard>
       </div>
     </div>
+
+    <!-- Complete Profile modal -->
+    <ProfileCompletionModal
+      :isOpen="showProfileModal"
+      @close="showProfileModal = false"
+      @complete="handleProfileComplete"
+    />
   </div>
 </template>
 
@@ -417,6 +424,11 @@ const handleSendMessage = () => {
 
 const handleKeyPress = (e: KeyboardEvent) => {
   if (e.key === "Enter") handleSendMessage();
+};
+
+const handleProfileComplete = () => {
+  isVerified.value = true;
+  showProfileModal.value = false;
 };
 
 const headerMotion = {
