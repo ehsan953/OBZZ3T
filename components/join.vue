@@ -108,7 +108,7 @@ const onKeydown = (e: KeyboardEvent) => {
                 <!-- Full Name -->
                 <div>
                   <label
-                    class="block text-[14px] font-semibold text-white/70 mb-2"
+                    class="block text-[14px] font-medium text-white/70 mb-2"
                   >
                     {{ t("joinModal.fullName") }}
                   </label>
@@ -155,7 +155,7 @@ const onKeydown = (e: KeyboardEvent) => {
                 <!-- Email -->
                 <div>
                   <label
-                    class="block text-[14px] font-semibold text-white/70 mb-2"
+                    class="block text-[14px] font-medium text-white/70 mb-2"
                   >
                     {{ t("joinModal.email") }}
                   </label>
@@ -196,7 +196,7 @@ const onKeydown = (e: KeyboardEvent) => {
 
                 <!-- Password -->
                 <div>
-                  <label class="block text-sm font-semibold text-white/70 mb-2">
+                  <label class="block text-sm font-medium text-white/70 mb-2">
                     {{ t("joinModal.password") }}
                   </label>
 
@@ -237,7 +237,7 @@ const onKeydown = (e: KeyboardEvent) => {
 
               <!-- Purple info bar -->
               <div
-                class="mt-5 sm:mt-6 rounded-xl border border-[#5B3FD6]/25 px-4 py-3 sm:py-4 text-[13px] sm:text-sm text-white/70"
+                class="mt-5 sm:mt-6 font-regular rounded-xl border border-[#5B3FD6]/25 px-4 py-3 sm:py-4 text-[13px] sm:text-sm text-white/70"
                 style="
                   background: linear-gradient(
                     90deg,
@@ -265,7 +265,7 @@ const onKeydown = (e: KeyboardEvent) => {
                 {{ t("joinModal.haveAccount") }}
                 <button
                   type="button"
-                  class="ml-2 font-semibold text-[#C9A24D] hover:opacity-90"
+                  class="ml-2 font-medium text-[#C9A24D] hover:opacity-90"
                   @click="openSignIn"
                 >
                   {{ t("joinModal.signInLink") }}

@@ -25,7 +25,7 @@
 
     <!-- Center content -->
     <div class="relative z-10 flex min-h-screen items-center justify-center px-6">
-      <div class="w-full max-w-md text-center">
+      <div class="w-full flex flex-col gap-[48px] max-w-md text-center">
         <!-- Logo + underline (scale / fade like React EntryPage) -->
         <div class="space-y-4 logo-animate">
           <h1
@@ -41,19 +41,19 @@
         </div>
 
         <!-- Buttons block (fade in after logo) -->
-        <div class="mt-10 flex flex-col items-center gap-4 buttons-animate">
+        <div class="flex flex-col items-center gap-4 buttons-animate">
           <!-- JOIN opens Join modal on the entry page -->
           <button
             type="button"
             @click="isJoinOpen = true"
-            class="w-[260px] rounded-lg bg-[#C9A24D] px-6 py-3 text-sm font-semibold tracking-widest text-black shadow-[0_0_0_1px_rgba(201,162,77,0.25),0_18px_40px_rgba(0,0,0,0.55)] transition hover:brightness-110 active:scale-[0.99]"
+            class="w-[260px] rounded-lg bg-[#C9A24D] px-6 py-3 text-sm font-roboto font-medium tracking-widest text-black shadow-[0_0_0_1px_rgba(201,162,77,0.25),0_18px_40px_rgba(0,0,0,0.55)] transition hover:brightness-110 active:scale-[0.99]"
           >
             {{ t("nav.join") }}
           </button>
 
           <NuxtLink
             to="/lounge"
-            class="w-[260px] rounded-lg bg-transparent px-6 py-3 text-sm font-semibold tracking-widest text-[#fff] shadow-[0_0_0_1px_rgba(201,162,77,0.10)] transition hover:bg-[#C9A24D]/10 active:scale-[0.99]"
+            class="w-[260px] rounded-lg bg-transparent px-6 py-3 text-sm font-roboto font-medium tracking-widest text-[#C9A24D] border border-[#C9A24D] shadow-[0_0_0_1px_rgba(201,162,77,0.10)] transition hover:bg-[#C9A24D]/10 active:scale-[0.99] mb-[48px]"
           >
             {{ t("nav.signIn") }}
           </NuxtLink>
@@ -61,7 +61,7 @@
 
         <!-- Subtitle (last, subtle fade-in) -->
         <div
-          class="mt-10 text-sm text-[#F4F2ED] opacity-60 italic max-w-md mx-auto subtitle-animate"
+          class="text-sm text-[#d1d0cd] opacity-60 italic font-light font-roboto max-w-md mx-auto subtitle-animate"
         >
           {{ t("nav.freeAccess") }}
         </div>
