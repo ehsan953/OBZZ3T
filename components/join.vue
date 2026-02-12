@@ -109,11 +109,6 @@ const handleSignup = async () => {
             @keydown="onKeydown"
             tabindex="0"
           >
-            <!-- Gold border + soft inner (kept same) -->
-            <div
-              class="pointer-events-none absolute inset-0 rounded-2xl"
-              style="box-shadow: 0px 0px 30px 0px rgba(91, 63, 214, 0.2);"
-            />
             <!-- Header -->
             <div class="relative px-5 sm:px-6 pt-5 sm:pt-6">
               <div class="flex items-start justify-between gap-3">
