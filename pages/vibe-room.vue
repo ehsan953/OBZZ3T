@@ -77,24 +77,8 @@
             >
               <div class="relative z-10">
                 <div class="flex items-center gap-2 mb-2">
-                  <svg
-                    v-if="lane.id === 'deep'"
-                    :class="[
-                      'w-5 h-5',
-                      selectedLane === lane.id
-                        ? 'text-[#C9A24D]'
-                        : 'text-[#F4F2ED]',
-                    ]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
+                  <svg v-if="lane.id === 'deep'" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.75016 15.0066C7.34064 15.8224 9.17023 16.0434 10.9092 15.6297C12.6482 15.216 14.1823 14.1948 15.235 12.75C16.2876 11.3053 16.7897 9.53215 16.6506 7.75003C16.5116 5.9679 15.7406 4.29403 14.4767 3.03005C13.2127 1.76607 11.5388 0.995103 9.7567 0.856073C7.97457 0.717044 6.20139 1.2191 4.75668 2.27176C3.31197 3.32443 2.29074 4.85848 1.87702 6.59749C1.46329 8.33649 1.68428 10.1661 2.50016 11.7566L0.833496 16.6732L5.75016 15.0066Z" stroke="#F4F2ED" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                   <svg
                     v-else-if="lane.id === 'light'"
@@ -268,18 +252,11 @@
             v-else
             class="bg-[rgba(244,242,237,0.05)] rounded-lg p-4 text-center"
           >
-            <svg
-              class="w-6 h-6 text-[#F4F2ED] opacity-40 mx-auto mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
+            <svg class="mx-auto mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g opacity="0.4">
+              <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="#F4F2ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#F4F2ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
             </svg>
             <p class="text-sm text-[#F4F2ED] opacity-60">
               Verification required to participate

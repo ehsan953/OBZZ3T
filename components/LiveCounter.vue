@@ -1,19 +1,27 @@
 <template>
   <div
     v-motion="counterMotion"
-    class="fixed top-6 right-6 z-50 bg-[rgba(11,11,13,0.8)] backdrop-blur-md border border-[rgba(201,162,77,0.15)] rounded-lg p-4"
+    class="fixed top-6 right-6 z-50 bg-[rgba(11,11,13,0.8)] backdrop-blur-md border border-[rgba(201,162,77,0.15)] rounded-lg p-4 w-[200px]"
   >
-    <h3 class="text-[#C9A24D] text-sm font-medium mb-3">
-      {{ t("liveNow") }}
-    </h3>
-    <div class="space-y-2">
+    <div class="flex gap-2">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10.6666 14V12.6667C10.6666 11.9594 10.3856 11.2811 9.88554 10.781C9.38544 10.281 8.70716 10 7.99992 10H3.99992C3.29267 10 2.6144 10.281 2.1143 10.781C1.6142 11.2811 1.33325 11.9594 1.33325 12.6667V14" stroke="#C9A24D" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5.99992 7.33333C7.47268 7.33333 8.66659 6.13943 8.66659 4.66667C8.66659 3.19391 7.47268 2 5.99992 2C4.52716 2 3.33325 3.19391 3.33325 4.66667C3.33325 6.13943 4.52716 7.33333 5.99992 7.33333Z" stroke="#C9A24D" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14.6667 14V12.6667C14.6663 12.0758 14.4697 11.5018 14.1077 11.0349C13.7457 10.5679 13.2388 10.2344 12.6667 10.0867" stroke="#C9A24D" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10.6667 2.08667C11.2404 2.23353 11.7488 2.56713 12.1118 3.03487C12.4749 3.50261 12.672 4.07789 12.672 4.67C12.672 5.26211 12.4749 5.83739 12.1118 6.30513C11.7488 6.77286 11.2404 7.10647 10.6667 7.25333" stroke="#C9A24D" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3 class="text-sm font-medium mb-3 text-[#F4F2ED] opacity-80">
+        {{ t("liveNow") }}
+      </h3>
+    </div>
+    <div class="space-y-2 text-[#F4F2ED]">
       <div class="flex items-center justify-between">
-        <span class="text-sm text-[#F4F2ED]">{{ t("theLounge") }}</span>
-        <span class="text-sm font-semibold text-[#C9A24D]">247</span>
+        <span class="text-sm">{{ t("theLounge") }}</span>
+        <span class="text-sm font-semibold">247</span>
       </div>
       <div class="flex items-center justify-between">
-        <span class="text-sm text-[#F4F2ED]">{{ t("theVibeRoom") }}</span>
-        <span class="text-sm font-semibold text-[#C9A24D]">89</span>
+        <span class="text-sm">{{ t("theVibeRoom") }}</span>
+        <span class="text-sm font-semibold">89</span>
       </div>
     </div>
   </div>
