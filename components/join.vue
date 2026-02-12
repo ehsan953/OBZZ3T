@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "#imports";
+import { useAuthStore } from "~/stores/auth";
+import { useRouter } from "vue-router";
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const router = useRouter();
 
 defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void }>();
@@ -10,20 +14,61 @@ const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void }>();
 const close = () => emit("update:modelValue", false);
 
 const fullName = ref("");
+const userName = ref("");
 const email = ref("");
 const password = ref("");
+const confirmPassword = ref("");
 
 const isAuthOpen = ref(false);
+const signupError = ref<string | null>(null);
 
 const openSignIn = () => {
-  // Close Join modal first (so AuthModal isn't behind it)
   close();
-  // Then open AuthModal in signin mode
   isAuthOpen.value = true;
 };
 
 const onKeydown = (e: KeyboardEvent) => {
   if (e.key === "Escape") close();
+};
+
+// Form validation
+const isFormValid = computed(() => {
+  return (
+    fullName.value.trim() !== "" &&
+    userName.value.trim() !== "" &&
+    email.value.trim() !== "" &&
+    password.value.length >= 8 &&
+    confirmPassword.value.length >= 8 &&
+    password.value === confirmPassword.value
+  );
+});
+
+const handleSignup = async () => {
+  // Reset error
+  signupError.value = null;
+
+  // Validate form
+  if (!isFormValid.value) {
+    signupError.value = "Please fill in all fields correctly. Password must be at least 8 characters.";
+    return;
+  }
+
+  try {
+
+    await authStore.signup({
+      name: fullName.value.trim(),
+      username: userName.value.trim(),
+      email: email.value.trim(),
+      password: password.value,
+      password_confirmation: confirmPassword.value,
+    });
+
+    // Success - close modal and optionally navigate
+    close();
+    
+  } catch (error: any) {
+    signupError.value = authStore.error || "Signup failed. Please try again.";
+  }
 };
 </script>
 
@@ -37,8 +82,7 @@ const onKeydown = (e: KeyboardEvent) => {
       >
         <!-- WRAPPER (size/position + holds glow border) -->
         <div
-          class="relative w-[calc(100vw-24px)] max-w-[448px] scale-[0.90] xs:scale-[0.95] sm:scale-100"
-          style="height: 650px"
+          class="relative w-[calc(100vw-24px)] max-w-[500px] scale-[0.90] xs:scale-[0.95] sm:scale-100"
           @click.stop
         >
           <!-- GLOWING GRADIENT BORDER (yellowish) -->
@@ -61,7 +105,7 @@ const onKeydown = (e: KeyboardEvent) => {
 
           <!-- MODAL BOX (content stays same) -->
           <div
-            class="relative h-full rounded-2xl bg-[#0B0B0D]/95 font-roboto backdrop-blur-sm border border-[rgba(201,162,77,0.15)] shadow-[#12101E]"
+            class="relative h-full max-h-[80vh] overflow-y-auto rounded-2xl bg-[#0B0B0D]/95 font-roboto backdrop-blur-sm border border-[rgba(201,162,77,0.15)] shadow-[#12101E]"
             @keydown="onKeydown"
             tabindex="0"
           >
@@ -147,7 +191,53 @@ const onKeydown = (e: KeyboardEvent) => {
                       v-model="fullName"
                       type="text"
                       :placeholder="t('joinModal.fullNamePlaceholder')"
-                      class="h-[50px] w-full sm:w-[398px] rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
+                      class="w-full rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 py-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
+                    />
+                  </div>
+                </div>
+                <!-- Username -->
+                <div>
+                  <label
+                    class="block text-[14px] font-medium text-white/70 mb-2"
+                  >
+                    {{ t("joinModal.userName") }}
+                  </label>
+
+                  <div class="relative">
+                    <span
+                      class="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <g opacity="0.4">
+                          <path
+                            d="M12.6666 14V12.6667C12.6666 11.9594 12.3857 11.2811 11.8856 10.781C11.3855 10.281 10.7072 10 9.99998 10H5.99998C5.29274 10 4.61446 10.281 4.11436 10.781C3.61426 11.2811 3.33331 11.9594 3.33331 12.6667V14"
+                            stroke="#F4F2ED"
+                            stroke-width="1.33333"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M7.99998 7.33333C9.47274 7.33333 10.6666 6.13943 10.6666 4.66667C10.6666 3.19391 9.47274 2 7.99998 2C6.52722 2 5.33331 3.19391 5.33331 4.66667C5.33331 6.13943 6.52722 7.33333 7.99998 7.33333Z"
+                            stroke="#F4F2ED"
+                            stroke-width="1.33333"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </g>
+                      </svg>
+                    </span>
+
+                    <input
+                      v-model="userName"
+                      type="text"
+                      :placeholder="t('joinModal.userNamePlaceholder')"
+                      class="w-full rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 py-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
                     />
                   </div>
                 </div>
@@ -189,7 +279,7 @@ const onKeydown = (e: KeyboardEvent) => {
                       v-model="email"
                       type="email"
                       :placeholder="t('joinModal.emailPlaceholder')"
-                      class="h-[50px] w-full sm:w-[398px] rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
+                      class="w-full rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 py-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
                     />
                   </div>
                 </div>
@@ -229,10 +319,58 @@ const onKeydown = (e: KeyboardEvent) => {
                       v-model="password"
                       type="password"
                       :placeholder="t('joinModal.passwordPlaceholder')"
-                      class="h-[50px] w-full sm:w-[398px] rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
+                      class="w-full rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 py-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
                     />
                   </div>
                 </div>
+
+                <!-- Confirm Password -->
+                <div>
+                  <label class="block text-sm font-medium text-white/70 mb-2">
+                    {{ t("joinModal.confirmpassword") }}
+                  </label>
+
+                  <div class="relative">
+                    <span
+                      class="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <path
+                          d="M7 11V8a5 5 0 0110 0v3"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M6 11h12v10H6V11z"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+
+                    <input
+                      v-model="confirmPassword"
+                      type="password"
+                      :placeholder="t('joinModal.confirmPasswordPlaceholder')"
+                      class="w-full rounded-xl border border-[#C9A24D]/15 bg-white/[0.03] pl-11 pr-4 py-4 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-[#C9A24D]/50 focus:bg-white/[0.04]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error Message -->
+              <div
+                v-if="signupError || authStore.error"
+                class="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+              >
+                {{ signupError || authStore.error }}
               </div>
 
               <!-- Purple info bar -->
@@ -252,15 +390,17 @@ const onKeydown = (e: KeyboardEvent) => {
               <!-- CTA -->
               <button
                 type="button"
-                class="mt-5 sm:mt-6 w-full rounded-xl bg-[#C9A24D] py-3.5 sm:py-4 text-center font-bold tracking-widest text-black shadow-[0_18px_50px_rgba(0,0,0,0.60)] hover:brightness-110 active:scale-[0.99] transition"
-                @click="close"
+                :disabled="authStore.isLoading || !isFormValid"
+                class="mt-5 sm:mt-6 w-full rounded-xl bg-[#C9A24D] py-3.5 sm:py-4 text-center font-bold tracking-widest text-black shadow-[0_18px_50px_rgba(0,0,0,0.60)] hover:brightness-110 active:scale-[0.99] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="handleSignup"
               >
-                {{ t("joinModal.joinCta") }}
+                <span v-if="authStore.isLoading">Signing up...</span>
+                <span v-else>{{ t("joinModal.joinCta") }}</span>
               </button>
 
               <!-- Footer -->
               <div
-                class="mt-6 sm:mt-7 border-t border-white/10 pt-4 sm:pt-5 text-center text-[13px] sm:text-sm text-white/45"
+                class="my-6 sm:my-7 border-t border-white/10 pt-4 sm:pt-5 text-center text-[13px] sm:text-sm text-white/45"
               >
                 {{ t("joinModal.haveAccount") }}
                 <button
@@ -278,7 +418,6 @@ const onKeydown = (e: KeyboardEvent) => {
     </Transition>
   </Teleport>
 
-  <!-- React-equivalent: sign-in happens in AuthModal, not via a route -->
   <AuthModal
     :isOpen="isAuthOpen"
     initialMode="signin"
@@ -296,5 +435,20 @@ const onKeydown = (e: KeyboardEvent) => {
 .join-fade-leave-to {
   opacity: 0;
   transform: scale(0.97);
+}
+/* Custom scrollbar for the modal */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(201, 162, 77, 0.3);
+  border-radius: 10px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 162, 77, 0.5);
 }
 </style>

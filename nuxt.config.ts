@@ -25,6 +25,12 @@ export default defineNuxtConfig({
   vite: { plugins: [tailwindcss()] },
   modules: ["@pinia/nuxt", "@nuxtjs/i18n", "@vueuse/motion/nuxt"],
   
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: (process.env as any).NUXT_PUBLIC_API_BASE_URL,
+    },
+  },
+  
   i18n: {
     strategy: "no_prefix",
     defaultLocale: "en",
