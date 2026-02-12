@@ -16,10 +16,10 @@
             <div class="flex items-center justify-between mb-6">
               <div>
                 <h2 class="text-2xl text-[#C9A24D] mb-1">
-                  {{ mode === 'join' ? t('joinOb33z') : t('welcomeBack') }}
+                  {{ t('welcomeBack') }}
                 </h2>
                 <p class="text-sm text-[#F4F2ED] opacity-60">
-                  {{ mode === 'join' ? t('createAccount') : t('signInToContinue') }}
+                  {{ t('signInToContinue') }}
                 </p>
               </div>
               <button
@@ -32,30 +32,15 @@
               </button>
             </div>
 
-            <form @submit.prevent="handleSubmit" class="space-y-4">
-              <div v-if="mode === 'join'">
-                <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
-                  {{ t('fullName') }}
-                </label>
-                <div class="relative">
-                  <svg
-                    class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F4F2ED] opacity-40"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <OB33ZInput
-                    v-model="formData.name"
-                    type="text"
-                    :placeholder="t('enterName')"
-                    class="pl-10"
-                    required
-                  />
-                </div>
-              </div>
+            <!-- Error Message -->
+            <div
+              v-if="loginError"
+              class="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+            >
+              {{ loginError }}
+            </div>
 
+            <form @submit.prevent="handleSubmit" class="space-y-4">
               <div>
                 <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
                   {{ t('email') }}
@@ -102,76 +87,97 @@
                 </div>
               </div>
 
-              <div v-if="mode === 'join'" class="p-3 rounded-lg bg-[rgba(91,63,214,0.1)] border border-[rgba(91,63,214,0.2)]">
-                <p class="text-xs text-[#F4F2ED] opacity-80">
-                  {{ t('freeAccess') }}
-                </p>
-              </div>
-
-              <OB33ZButton type="submit" variant="primary" class="w-full">
-                {{ mode === 'join' ? t('join') : t('signIn') }}
+              <OB33ZButton 
+                type="submit" 
+                variant="primary" 
+                class="w-full"
+                :disabled="authStore.isLoading"
+              >
+                <span v-if="authStore.isLoading">Signing in...</span>
+                <span v-else>{{ t('signIn') }}</span>
               </OB33ZButton>
             </form>
 
             <div class="mt-6 pt-6 border-t border-[rgba(201,162,77,0.15)] text-center">
               <p class="text-sm text-[#F4F2ED] opacity-60">
-                {{ mode === 'join' ? t('alreadyHaveAccount') : t('dontHaveAccount') }}
+                {{ t('dontHaveAccount') }}
                 <button
                   type="button"
-                  @click="mode = mode === 'join' ? 'signin' : 'join'"
+                  @click="isJoinOpen = true"
                   class="text-[#C9A24D] hover:underline ml-1"
                 >
-                  {{ mode === 'join' ? t('signIn') : t('join') }}
+                  {{ t('join') }}
                 </button>
               </p>
             </div>
           </OB33ZCard>
         </div>
+        <Join v-model="isJoinOpen" />
       </div>
     </Transition>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useLanguage } from "#imports";
+import { useAuthStore } from "~/stores/auth";
 
 const { t } = useLanguage();
+const authStore = useAuthStore();
+const isJoinOpen = ref(false);
+const loginError = ref<string | null>(null);
 
 interface Props {
   isOpen: boolean;
-  initialMode?: "signin" | "join";
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  initialMode: "join",
-});
+const props = withDefaults(defineProps<Props>(), {});
 
 const emit = defineEmits<{
   close: [];
   success: [userData: { name: string; email: string }];
 }>();
 
-const mode = ref<"signin" | "join">(props.initialMode);
 const formData = ref({
-  name: "",
   email: "",
   password: "",
 });
 
-watch(
-  () => props.initialMode,
-  (newMode) => {
-    mode.value = newMode;
-  }
-);
+// Reset form when modal opens
+onMounted(() => {
+  loginError.value = null;
+  authStore.error = null;
+});
 
-const handleSubmit = () => {
-  emit("success", {
-    name: formData.value.name || "New Member",
-    email: formData.value.email,
-  });
-  emit("close");
+const handleSubmit = async () => {
+  loginError.value = null;
+  authStore.error = null;
+
+  try {
+    await authStore.login({
+      email: formData.value.email,
+      password: formData.value.password,
+    });
+
+    // Success - emit success with user data
+    emit("success", {
+      name: authStore.user?.name || "Member",
+      email: formData.value.email,
+    });
+    
+    // Close the modal
+    emit("close");
+    
+    // Reset form
+    formData.value = {
+      email: "",
+      password: "",
+    };
+    
+  } catch (error: any) {
+    loginError.value = authStore.error || "Login failed. Please check your credentials.";
+  }
 };
 
 const backdropMotion = {

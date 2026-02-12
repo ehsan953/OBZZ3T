@@ -37,6 +37,8 @@
   "fullName": "Full Name",
   "enterName": "Enter your full name",
   "email": "Email",
+  "emailOrUsername": "Email/Username",
+  "enterEmailOrUsername": "Enter your email or username",
   "enterEmail": "Enter your email",
   "password": "Password",
   "enterPassword": "Enter your password",

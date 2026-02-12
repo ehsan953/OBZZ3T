@@ -38,6 +38,8 @@
   "enterName": "Ingresa tu nombre completo",
   "email": "Correo Electrónico",
   "enterEmail": "Ingresa tu correo",
+  "emailOrUsername": "Correo/Nombre de Usuario",
+  "enterEmailOrUsername": "Ingresa tu correo o nombre de usuario",
   "password": "Contraseña",
   "enterPassword": "Ingresa tu contraseña",
   "alreadyHaveAccount": "¿Ya tienes una cuenta?",

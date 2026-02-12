@@ -22,6 +22,18 @@ interface AuthState {
   error: string | null
 }
 
+interface LoginData {
+  email: string
+  password: string
+}
+
+interface LoginResponse {
+  message?: string
+  user?: any
+  token?: string
+  [key: string]: any
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
@@ -99,6 +111,68 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Add this action inside the actions object in your store
+    async login(data: LoginData): Promise<LoginResponse> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/login`
+
+        // Create FormData as the API expects formdata
+        const formData = new FormData()
+        formData.append('email', data.email)
+        formData.append('password', data.password)
+
+        const response = await $fetch<LoginResponse>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+          },
+          body: formData,
+        })
+
+        // If the API returns a token, store it
+        if (response.token) {
+          this.token = response.token
+          this.user = response.user || null
+          
+          // Store token in localStorage for persistence
+          if (process.client) {
+            localStorage.setItem('auth_token', response.token)
+            // Also store user data if needed
+            if (response.user) {
+              localStorage.setItem('user_data', JSON.stringify(response.user))
+            }
+          }
+        }
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        // Handle API error responses
+        if (error.data) {
+          // Handle validation errors
+          if (error.data.errors) {
+            // Format validation errors
+            const errorMessages = Object.values(error.data.errors).flat()
+            this.error = errorMessages.join(', ') || 'Login failed'
+          } else {
+            this.error = error.data.message || error.data.error || 'Login failed'
+          }
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred during login'
+        }
+
+        throw error
+      }
+    },
+
     /**
      * Clear auth state (logout)
      */
@@ -120,6 +194,16 @@ export const useAuthStore = defineStore('auth', {
         const storedToken = localStorage.getItem('auth_token')
         if (storedToken) {
           this.token = storedToken
+          
+          // Restore user data if available
+          const userData = localStorage.getItem('user_data')
+          if (userData) {
+            try {
+              this.user = JSON.parse(userData)
+            } catch (e) {
+              console.error('Failed to parse user data', e)
+            }
+          }
         }
       }
     },
