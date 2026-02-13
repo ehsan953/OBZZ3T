@@ -98,6 +98,16 @@
               </OB33ZButton>
             </form>
 
+            <div class="mt-4 text-center">
+              <button
+                type="button"
+                @click="isForgotPasswordOpen = true"
+                class="text-sm text-[#C9A24D] hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             <div class="mt-6 pt-6 border-t border-[rgba(201,162,77,0.15)] text-center">
               <p class="text-sm text-[#F4F2ED] opacity-60">
                 {{ t('dontHaveAccount') }}
@@ -113,6 +123,11 @@
           </OB33ZCard>
         </div>
         <Join v-model="isJoinOpen" />
+        <ForgotPasswordModal 
+          :isOpen="isForgotPasswordOpen" 
+          @close="isForgotPasswordOpen = false"
+          @success="handlePasswordResetSuccess"
+        />
       </div>
     </Transition>
   </Teleport>
@@ -126,6 +141,7 @@ import { useAuthStore } from "~/stores/auth";
 const { t } = useLanguage();
 const authStore = useAuthStore();
 const isJoinOpen = ref(false);
+const isForgotPasswordOpen = ref(false);
 const loginError = ref<string | null>(null);
 
 interface Props {
@@ -178,6 +194,13 @@ const handleSubmit = async () => {
   } catch (error: any) {
     loginError.value = authStore.error || "Login failed. Please check your credentials.";
   }
+};
+
+const handlePasswordResetSuccess = () => {
+  // Close forgot password modal and show success message
+  isForgotPasswordOpen.value = false;
+  loginError.value = null;
+  // Optionally show a success message or auto-fill email
 };
 
 const backdropMotion = {

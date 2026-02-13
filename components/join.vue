@@ -20,6 +20,7 @@ const password = ref("");
 const confirmPassword = ref("");
 
 const isAuthOpen = ref(false);
+const isEmailVerificationOpen = ref(false);
 const signupError = ref<string | null>(null);
 
 const openSignIn = () => {
@@ -54,7 +55,6 @@ const handleSignup = async () => {
   }
 
   try {
-
     await authStore.signup({
       name: fullName.value.trim(),
       username: userName.value.trim(),
@@ -63,8 +63,14 @@ const handleSignup = async () => {
       password_confirmation: confirmPassword.value,
     });
 
-    // Success - close modal and optionally navigate
+    // Success - always show email verification modal after signup
+    // Close the signup modal first
     close();
+    
+    // Open email verification modal after a short delay for smooth transition
+    setTimeout(() => {
+      isEmailVerificationOpen.value = true;
+    }, 200);
     
   } catch (error: any) {
     signupError.value = authStore.error || "Signup failed. Please try again.";
@@ -417,6 +423,13 @@ const handleSignup = async () => {
     :isOpen="isAuthOpen"
     initialMode="signin"
     @close="isAuthOpen = false"
+  />
+
+  <EmailVerificationModal
+    :isOpen="isEmailVerificationOpen"
+    :userEmail="email"
+    @close="isEmailVerificationOpen = false"
+    @skip="isEmailVerificationOpen = false"
   />
 </template>
 

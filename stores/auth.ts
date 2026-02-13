@@ -82,14 +82,22 @@ export const useAuthStore = defineStore('auth', {
           body: formData,
         })
 
+        // Handle API response structure: response.data.token or response.token
+        const token = (response as any).data?.token || response.token
+        const user = (response as any).data?.user || response.user
+
         // If the API returns a token, store it
-        if (response.token) {
-          this.token = response.token
-          this.user = response.user || null
+        if (token) {
+          this.token = token
+          this.user = user || null
           
-          // Optionally store token in localStorage/cookie for persistence
+          // Store token in localStorage for persistence
           if (process.client) {
-            localStorage.setItem('auth_token', response.token)
+            localStorage.setItem('auth_token', token)
+            // Also store user data if available
+            if (user) {
+              localStorage.setItem('user_data', JSON.stringify(user))
+            }
           }
         }
 
@@ -133,17 +141,21 @@ export const useAuthStore = defineStore('auth', {
           body: formData,
         })
 
+        // Handle API response structure: response.data.token or response.token
+        const token = (response as any).data?.token || response.token
+        const user = (response as any).data?.user || response.user
+
         // If the API returns a token, store it
-        if (response.token) {
-          this.token = response.token
-          this.user = response.user || null
+        if (token) {
+          this.token = token
+          this.user = user || null
           
           // Store token in localStorage for persistence
           if (process.client) {
-            localStorage.setItem('auth_token', response.token)
+            localStorage.setItem('auth_token', token)
             // Also store user data if needed
-            if (response.user) {
-              localStorage.setItem('user_data', JSON.stringify(response.user))
+            if (user) {
+              localStorage.setItem('user_data', JSON.stringify(user))
             }
           }
         }
@@ -205,6 +217,229 @@ export const useAuthStore = defineStore('auth', {
             }
           }
         }
+      }
+    },
+
+    /**
+     * Forgot Password - Send OTP to email
+     */
+    async forgotPassword(email: string): Promise<{ message?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/forgot-password`
+
+        const formData = new FormData()
+        formData.append('email', email)
+
+        const response = await $fetch<{ message?: string; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            // Don't set Content-Type for FormData - browser handles it automatically
+          },
+          body: formData,
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          if (error.data.errors) {
+            const errorMessages = Object.values(error.data.errors).flat()
+            this.error = errorMessages.join(', ') || 'Failed to send OTP'
+          } else {
+            this.error = error.data.message || error.data.error || 'Failed to send OTP'
+          }
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
+    /**
+     * Verify OTP
+     */
+    async verifyOTP(email: string, otp: string): Promise<{ message?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/verify-otp`
+
+        const formData = new FormData()
+        formData.append('email', email)
+        formData.append('otp', otp)
+
+        const response = await $fetch<{ message?: string; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+          },
+          body: formData,
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          if (error.data.errors) {
+            const errorMessages = Object.values(error.data.errors).flat()
+            this.error = errorMessages.join(', ') || 'OTP verification failed'
+          } else {
+            this.error = error.data.message || error.data.error || 'OTP verification failed'
+          }
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
+    /**
+     * Reset Password
+     */
+    async resetPassword(
+      email: string,
+      otp: string,
+      password: string,
+      password_confirmation: string
+    ): Promise<{ message?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/reset-password`
+
+        const formData = new FormData()
+        formData.append('email', email)
+        formData.append('otp', otp)
+        formData.append('password', password)
+        formData.append('password_confirmation', password_confirmation)
+
+        const response = await $fetch<{ message?: string; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            // Don't set Content-Type for FormData - browser handles it automatically
+          },
+          body: formData,
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          if (error.data.errors) {
+            const errorMessages = Object.values(error.data.errors).flat()
+            this.error = errorMessages.join(', ') || 'Password reset failed'
+          } else {
+            this.error = error.data.message || error.data.error || 'Password reset failed'
+          }
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
+    /**
+     * Send Email Verification
+     */
+    async sendEmailVerification(): Promise<{ message?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/email/verification/send`
+
+        const response = await $fetch<{ message?: string; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          this.error = error.data.message || error.data.error || 'Failed to send verification email'
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
+    /**
+     * Resend Email Verification
+     */
+    async resendEmailVerification(): Promise<{ message?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/email/verification/resend`
+
+        const response = await $fetch<{ message?: string; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          this.error = error.data.message || error.data.error || 'Failed to resend verification email'
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
       }
     },
   },
