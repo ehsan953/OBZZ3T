@@ -205,7 +205,7 @@ const handleSubmit = async () => {
 
     window.setTimeout(() => {
       emit("close");
-      navigateTo("/lounge");
+      navigateTo("/vibe-room");
       // Reset form
       formData.value = {
         email: "",

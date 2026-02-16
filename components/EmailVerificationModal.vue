@@ -124,7 +124,7 @@
                 </div>
 
                 <!-- Resend Button -->
-                <div class="space-y-3">
+                <div class="space-y-3 mb-4">
                   <button
                     type="button"
                     :disabled="authStore.isLoading || resendCooldown > 0"
