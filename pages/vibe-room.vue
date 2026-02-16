@@ -35,6 +35,12 @@
           <p>{{ t("verifiedOnly") }}</p>
         </div>
       </div>
+      <!-- Flash success message (e.g., after login redirect) -->
+      <SystemState
+        v-if="flash.type.value === 'success' && flash.message.value"
+        type="success"
+        :message="flash.message.value"
+      />
 
       <!-- Email Verification Banner -->
       <EmailVerificationBanner
@@ -326,10 +332,17 @@
 import { ref, computed } from "vue";
 import { useI18n } from "#imports";
 import { useAuthStore } from "~/stores/auth";
+import { useFlashMessage } from "~/composables/useFlashMessage";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const flash = useFlashMessage();
 
+onMounted(() => {
+  if (flash.type.value === "success" && flash.message.value) {
+    window.setTimeout(() => flash.clear(), 3000);
+  }
+});
 type Lane = "deep" | "light" | "social";
 
 interface Message {

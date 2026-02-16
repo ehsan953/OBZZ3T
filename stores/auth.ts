@@ -186,28 +186,93 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * Clear auth state (logout)
+     * Logout - Call API and clear auth state
      */
-    logout() {
-      this.user = null
-      this.token = null
+    async logout(): Promise<void> {
+      this.isLoading = true
       this.error = null
-      
-      if (process.client) {
-        localStorage.removeItem('auth_token')
+
+      try {
+        if (this.token) {
+          const baseUrl = this.getApiBaseUrl()
+          const url = `${baseUrl}/logout`
+
+          // Call logout API endpoint
+          await $fetch(url, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${this.token}`,
+            },
+          })
+        }
+      } catch (error: any) {
+        // Even if API call fails, we should still clear local state
+        console.error('Logout API call failed:', error)
+      } finally {
+        // Always clear local state regardless of API call result
+        this.user = null
+        this.token = null
+        this.error = null
+        this.isLoading = false
+        
+        if (process.client) {
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('user_data')
+        }
+      }
+    },
+
+    /**
+     * Get current user details from API
+     */
+    async getCurrentUser(): Promise<any> {
+      if (!this.token) {
+        throw new Error('Authentication required')
+      }
+
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/user`
+
+        const response = await $fetch<{ data?: any; user?: any; [key: string]: any }>(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+        })
+
+        // Handle API response structure
+        const user = (response as any).data?.user || response.user || response.data || response
+
+        if (user) {
+          this.user = user
+          if (process.client) {
+            localStorage.setItem('user_data', JSON.stringify(user))
+          }
+        }
+
+        return user
+      } catch (error: any) {
+        // If token is invalid, clear auth state
+        if (error.status === 401 || error.statusCode === 401) {
+          this.logout()
+        }
+        throw error
       }
     },
 
     /**
      * Initialize auth state from stored token (on app load)
      */
-    initAuth() {
+    async initAuth() {
       if (process.client) {
         const storedToken = localStorage.getItem('auth_token')
         if (storedToken) {
           this.token = storedToken
           
-          // Restore user data if available
+          // Try to restore user data from localStorage first (for faster initial load)
           const userData = localStorage.getItem('user_data')
           if (userData) {
             try {
@@ -215,6 +280,14 @@ export const useAuthStore = defineStore('auth', {
             } catch (e) {
               console.error('Failed to parse user data', e)
             }
+          }
+
+          // Then fetch fresh user data from API to ensure it's up to date
+          try {
+            await this.getCurrentUser()
+          } catch (error) {
+            // If fetching fails (e.g., token expired), logout will be called in getCurrentUser
+            console.error('Failed to fetch current user:', error)
           }
         }
       }

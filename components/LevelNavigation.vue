@@ -25,6 +25,21 @@
             </div>
           </div>
         </NuxtLink>
+        
+        <!-- Logout Button (only shown when authenticated) -->
+        <button
+          v-if="authStore.isAuthenticated"
+          @click="handleLogout"
+          :disabled="authStore.isLoading"
+          class="px-4 py-2 rounded-md transition-colors text-[#F4F2ED] hover:bg-red-500/20 hover:text-red-400 border-t border-[rgba(201,162,77,0.15)] mt-1 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span class="text-sm font-medium">
+            {{ authStore.isLoading ? 'Logging out...' : 'Logout' }}
+          </span>
+        </button>
       </div>
     </div>
   </nav>
@@ -32,10 +47,13 @@
 
 <script setup lang="ts">
 import { useI18n } from "#imports";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "~/stores/auth";
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
 
 const levels = [
   { path: "/lounge", name: t("theLounge"), level: 1, isLive: true },
@@ -45,6 +63,17 @@ const levels = [
 const activeLevels = levels.filter((level) => level.isLive);
 
 const isActive = (path: string) => route.path === path;
+
+const handleLogout = async () => {
+  try {
+    await authStore.logout();
+    // Redirect to home page after logout
+    await router.push('/');
+  } catch (error) {
+    // Error is already handled in authStore
+    console.error('Logout failed:', error);
+  }
+};
 
 const navMotion = {
   initial: { opacity: 0, x: -20 },
