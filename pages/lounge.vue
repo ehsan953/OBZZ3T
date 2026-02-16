@@ -47,8 +47,8 @@
         @verifyEmail="showEmailVerificationModal = true"
       />
 
-      <!-- Guest Banner -->
-      <div v-if="isGuest" v-motion="guestBannerMotion" class="mb-8">
+      <!-- Guest/User Banner (always shown, content changes based on auth state) -->
+      <div v-motion="guestBannerMotion" class="mb-8">
         <OB33ZCard
           class="bg-gradient-to-r from-[rgba(91,63,214,0.15)] to-[rgba(201,162,77,0.15)] border-[rgba(201,162,77,0.3)]"
         >
@@ -57,19 +57,41 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in w-6 h-6 text-[#C9A24D]"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
               <div>
                 <h3 class="text-[#F4F2ED] font-medium mb-1">
-                  Join OB33Z to unlock full access
+                  <span v-if="!authStore.isAuthenticated">Join OB33Z to unlock full access</span>
+                  <span v-else>Welcome back, {{ authStore.user?.name || authStore.user?.display_name || 'Member' }}!</span>
                 </h3>
                 <p class="text-sm text-[#F4F2ED] opacity-80">
-                  {{ t("nav.freeAccess") }}
+                  <span v-if="!authStore.isAuthenticated">{{ t("nav.freeAccess") }}</span>
+                  <span v-else>You're logged in and ready to connect</span>
                 </p>
               </div>
             </div>
             <div class="flex gap-3">
-              <OB33ZButton variant="ghost" @click="openJoinModal">
+              <OB33ZButton 
+                v-if="!authStore.isAuthenticated"
+                variant="ghost" 
+                @click="openJoinModal"
+              >
                 {{ t("nav.signIn") }}
               </OB33ZButton>
-              <OB33ZButton variant="primary" @click="openJoinModal">
+              <OB33ZButton 
+                v-if="!authStore.isAuthenticated"
+                variant="primary" 
+                @click="openJoinModal"
+              >
                 {{ t("nav.join") }}
+              </OB33ZButton>
+              <OB33ZButton 
+                v-else
+                variant="ghost" 
+                @click="handleLogout"
+                :disabled="authStore.isLoading"
+                class="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+              >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                {{ authStore.isLoading ? 'Logging out...' : 'Logout' }}
               </OB33ZButton>
             </div>
           </div>
@@ -311,8 +333,16 @@ import { useAuthStore } from "~/stores/auth";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const router = useRouter();
 
-const isGuest = computed(() => !authStore.isAuthenticated);
+// Determine guest status - wait for auth to initialize
+const isGuest = computed(() => {
+  // If auth hasn't initialized yet, assume guest (will update once initialized)
+  if (!authStore.isInitialized) {
+    return true;
+  }
+  return !authStore.isAuthenticated;
+});
 const isJoinOpen = ref(false);
 const showEmailVerificationModal = ref(false);
 const message = ref("");
@@ -383,6 +413,16 @@ const handleKeyPress = (e: KeyboardEvent) => {
 
 const openJoinModal = () => {
   isJoinOpen.value = true;
+};
+
+const handleLogout = async () => {
+  try {
+    await authStore.logout();
+    // Redirect to home page after logout
+    await router.push('/');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
 };
 
 const headerMotion = {

@@ -26,9 +26,9 @@
           </div>
         </NuxtLink>
         
-        <!-- Logout Button (only shown when authenticated) -->
+        <!-- Logout Button (only shown when authenticated and auth is initialized) -->
         <button
-          v-if="authStore.isAuthenticated"
+          v-if="authStore.isInitialized && authStore.isAuthenticated"
           @click="handleLogout"
           :disabled="authStore.isLoading"
           class="px-4 py-2 rounded-md transition-colors text-[#F4F2ED] hover:bg-red-500/20 hover:text-red-400 border-t border-[rgba(201,162,77,0.15)] mt-1 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"

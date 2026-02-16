@@ -88,10 +88,20 @@ const isProfileCompleted = computed(() => {
 });
 
 const shouldShow = computed(() => {
-  // Show if explicitly set to show, or if user is authenticated but not verified
+  // Don't show while auth is initializing
+  if (!authStore.isInitialized) {
+    return false;
+  }
+  // Show if explicitly set to show
   if (props.show !== undefined) {
     return props.show;
   }
+  // Always show if user is authenticated and profile is completed (as requested)
+  // This ensures the banner shows after profile completion regardless of verification status
+  if (authStore.isAuthenticated && isProfileCompleted.value) {
+    return true;
+  }
+  // Also show if authenticated but not verified (for backwards compatibility)
   return authStore.isAuthenticated && !isVerified.value;
 });
 

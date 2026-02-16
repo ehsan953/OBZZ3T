@@ -20,6 +20,7 @@ interface AuthState {
   token: string | null
   isLoading: boolean
   error: string | null
+  isInitialized: boolean
 }
 
 interface LoginData {
@@ -40,6 +41,7 @@ export const useAuthStore = defineStore('auth', {
     token: null,
     isLoading: false,
     error: null,
+    isInitialized: false,
   }),
 
   getters: {
@@ -153,11 +155,14 @@ export const useAuthStore = defineStore('auth', {
           // Store token in localStorage for persistence
           if (process.client) {
             localStorage.setItem('auth_token', token)
-            // Also store user data if needed
+            // Also store user data if available
             if (user) {
               localStorage.setItem('user_data', JSON.stringify(user))
             }
           }
+          
+          // Mark as initialized after successful login
+          this.isInitialized = true
         }
 
         this.isLoading = false
@@ -268,6 +273,7 @@ export const useAuthStore = defineStore('auth', {
      */
     async initAuth() {
       if (process.client) {
+        this.isInitialized = false
         const storedToken = localStorage.getItem('auth_token')
         if (storedToken) {
           this.token = storedToken
@@ -288,8 +294,12 @@ export const useAuthStore = defineStore('auth', {
           } catch (error) {
             // If fetching fails (e.g., token expired), logout will be called in getCurrentUser
             console.error('Failed to fetch current user:', error)
+            // Don't clear state here if it's just a network error - let getCurrentUser handle 401s
           }
         }
+        this.isInitialized = true
+      } else {
+        this.isInitialized = true
       }
     },
 

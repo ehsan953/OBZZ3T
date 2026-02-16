@@ -48,8 +48,8 @@
         @verifyEmail="showEmailVerificationModal = true"
       />
 
-      <!-- View-Only Warning (if not verified) -->
-      <div v-if="!isVerified" v-motion="viewOnlyMotion" class="mb-6">
+      <!-- View-Only Warning (shown for guests, users without completed profile, or unverified users) -->
+      <div v-motion="viewOnlyMotion" class="mb-6">
         <OB33ZCard
           class="bg-[rgba(91,63,214,0.1)] border-[rgba(91,63,214,0.3)]"
         >
@@ -68,8 +68,9 @@
             >
               {{ t("completeProfile") }}
             </OB33ZButton>
+            <!-- For logged-in users with completed profile but not verified: show verify email button -->
             <OB33ZButton
-              v-else
+              v-else-if="!isVerified"
               variant="secondary"
               class="whitespace-nowrap"
               @click="showEmailVerificationModal = true"
@@ -360,12 +361,18 @@ const showEmailVerificationModal = ref(false);
 
 // Check if user is verified from auth store
 const isVerified = computed(() => {
-  return authStore.user?.is_verified === true || authStore.user?.email_verified_at !== null;
+  if (!authStore.isAuthenticated || !authStore.user) {
+    return false;
+  }
+  return authStore.user.is_verified === true || authStore.user.email_verified_at !== null;
 });
 
 // Check if profile is completed
 const isProfileCompleted = computed(() => {
-  return authStore.user?.profile_completed === true;
+  if (!authStore.isAuthenticated || !authStore.user) {
+    return false;
+  }
+  return authStore.user.profile_completed === true;
 });
 
 const messages = ref<Record<Lane, Message[]>>({
