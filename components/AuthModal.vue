@@ -32,6 +32,14 @@
               </button>
             </div>
 
+            <!-- Success Message -->
+            <div
+              v-if="loginSuccess"
+              class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300"
+            >
+              {{ loginSuccess }}
+            </div>
+
             <!-- Error Message -->
             <div
               v-if="loginError"
@@ -91,9 +99,10 @@
                 type="submit" 
                 variant="primary" 
                 class="w-full"
-                :disabled="authStore.isLoading"
+                :disabled="authStore.isLoading || isRedirecting"
               >
-                <span v-if="authStore.isLoading">Signing in...</span>
+                <span v-if="isRedirecting">Redirecting...</span>
+                <span v-else-if="authStore.isLoading">Signing in...</span>
                 <span v-else>{{ t('signIn') }}</span>
               </OB33ZButton>
             </form>
@@ -135,14 +144,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useLanguage } from "#imports";
+import { useLanguage, navigateTo } from "#imports";
 import { useAuthStore } from "~/stores/auth";
+import { useFlashMessage } from "~/composables/useFlashMessage";
 
 const { t } = useLanguage();
 const authStore = useAuthStore();
+const flash = useFlashMessage();
 const isJoinOpen = ref(false);
 const isForgotPasswordOpen = ref(false);
 const loginError = ref<string | null>(null);
+const loginSuccess = ref<string | null>(null);
+const isRedirecting = ref(false);
 
 interface Props {
   isOpen: boolean;
@@ -163,12 +176,16 @@ const formData = ref({
 // Reset form when modal opens
 onMounted(() => {
   loginError.value = null;
+  loginSuccess.value = null;
+  isRedirecting.value = false;
   authStore.error = null;
 });
 
 const handleSubmit = async () => {
   loginError.value = null;
+  loginSuccess.value = null;
   authStore.error = null;
+  isRedirecting.value = false;
 
   try {
     await authStore.login({
@@ -176,21 +193,25 @@ const handleSubmit = async () => {
       password: formData.value.password,
     });
 
+    isRedirecting.value = true;
+    loginSuccess.value = "Login successful. Redirecting to The Lounge...";
+    flash.setSuccess("Login successful. Welcome back!");
+
     // Success - emit success with user data
     emit("success", {
       name: authStore.user?.name || "Member",
       email: formData.value.email,
     });
-    
-    // Close the modal
-    emit("close");
-    
-    // Reset form
-    formData.value = {
-      email: "",
-      password: "",
-    };
-    
+
+    window.setTimeout(() => {
+      emit("close");
+      navigateTo("/lounge");
+      // Reset form
+      formData.value = {
+        email: "",
+        password: "",
+      };
+    }, 800);
   } catch (error: any) {
     loginError.value = authStore.error || "Login failed. Please check your credentials.";
   }

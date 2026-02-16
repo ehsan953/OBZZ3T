@@ -318,7 +318,6 @@
       :isOpen="showEmailVerificationModal"
       :userEmail="authStore.user?.email || ''"
       @close="showEmailVerificationModal = false"
-      @skip="showEmailVerificationModal = false"
     />
   </div>
 </template>
@@ -453,6 +452,7 @@ const handleProfileComplete = async (profileData: {
   birthday: string;
   phone_number: string;
   profileImages: File[];
+  interests: string[];
 }) => {
   try {
     // Calculate age from birthday if provided
@@ -480,7 +480,7 @@ const handleProfileComplete = async (profileData: {
       state: profileData.state,
       bio: profileData.bio || undefined,
       phone_number: profileData.phone_number || undefined,
-      interests: undefined, // Can be added later if needed
+      interests: profileData.interests,
       profile_photos: profileData.profileImages, // Now passing the uploaded images
     });
 

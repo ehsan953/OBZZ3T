@@ -148,16 +148,6 @@
                   </button>
                 </div>
 
-                <!-- Skip for now option -->
-                <div class="text-center">
-                  <button
-                    type="button"
-                    class="text-sm text-white/45 hover:text-white/70 transition"
-                    @click="$emit('skip')"
-                  >
-                    I'll verify later
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -184,7 +174,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   close: [];
-  skip: [];
 }>();
 
 const error = ref<string | null>(null);

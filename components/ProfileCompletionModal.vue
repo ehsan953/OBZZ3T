@@ -9,7 +9,7 @@
       >
         <div
           v-motion="modalMotion"
-          class="w-full max-w-lg"
+          class="w-full max-w-lg max-h-[80vh] overflow-y-auto "
           @click.stop
         >
           <OB33ZCard :glow="true">
@@ -257,6 +257,36 @@
                     </div>
                   </div>
 
+                  <!-- Interests -->
+                  <div>
+                    <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
+                      Interests * <span class="text-xs opacity-60">(At least 1 required)</span>
+                    </label>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        v-for="interest in availableInterests"
+                        :key="interest"
+                        type="button"
+                        @click="toggleInterest(interest)"
+                        :class="[
+                          'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                          selectedInterests.includes(interest)
+                            ? 'bg-[#C9A24D] text-[#0B0B0D]'
+                            : 'bg-[rgba(244,242,237,0.03)] text-[#F4F2ED] border border-[rgba(201,162,77,0.2)] hover:border-[#C9A24D] hover:bg-[rgba(244,242,237,0.05)]'
+                        ]"
+                      >
+                        {{ interest }}
+                      </button>
+                    </div>
+                    <!-- Validation Error -->
+                    <p v-if="interestError" class="text-xs text-red-400 mt-2 flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {{ interestError }}
+                    </p>
+                  </div>
+
                   <!-- Success Message Box -->
                   <div class="p-4 rounded-lg bg-[rgba(91,63,214,0.1)] border border-[rgba(91,63,214,0.2)]">
                     <div class="flex gap-3">
@@ -295,7 +325,7 @@
                 <OB33ZButton
                   type="submit"
                   variant="primary"
-                  :disabled="step === 1 && profileImages.length === 0"
+                  :disabled="(step === 1 && profileImages.length === 0) || (step === 2 && selectedInterests.length === 0)"
                   :class="step === 1 ? 'w-full' : 'flex-1'"
                 >
                   {{ step === 2 ? t('complete') : t('continue') }}
@@ -334,12 +364,38 @@ const emit = defineEmits<{
     phone_number: string;
     birthday: string;
     profileImages: File[];
+    interests: string[];
   }];
 }>();
 
 const step = ref(1);
 const profileImages = ref<ProfileImage[]>([]);
 const imageError = ref<string>("");
+const selectedInterests = ref<string[]>([]);
+const interestError = ref<string>("");
+
+// Available interests - can be customized or fetched from API
+const availableInterests = ref([
+  "Music",
+  "Sports",
+  "Travel",
+  "Food",
+  "Art",
+  "Technology",
+  "Fitness",
+  "Reading",
+  "Gaming",
+  "Movies",
+  "Photography",
+  "Dancing",
+  "Cooking",
+  "Fashion",
+  "Nature",
+  "Business",
+  "Education",
+  "Entertainment",
+  "Health"
+]);
 
 const profileData = ref({
   displayName: "",
@@ -384,6 +440,8 @@ watch(() => props.isOpen, (newVal) => {
     }
     profileImages.value = [];
     imageError.value = "";
+    selectedInterests.value = [];
+    interestError.value = "";
   }
 });
 
@@ -437,6 +495,16 @@ const removeImage = (index: number) => {
   }
 };
 
+const toggleInterest = (interest: string) => {
+  interestError.value = "";
+  const index = selectedInterests.value.indexOf(interest);
+  if (index > -1) {
+    selectedInterests.value.splice(index, 1);
+  } else {
+    selectedInterests.value.push(interest);
+  }
+};
+
 const handleSubmit = () => {
   if (step.value === 1) {
     // Validate at least one image
@@ -446,10 +514,16 @@ const handleSubmit = () => {
     }
     step.value++;
   } else {
+    // Validate at least one interest
+    if (selectedInterests.value.length === 0) {
+      interestError.value = "At least one interest is required";
+      return;
+    }
     // Submit complete profile data
     emit("complete", {
       ...profileData.value,
-      profileImages: profileImages.value.map(img => img.file)
+      profileImages: profileImages.value.map(img => img.file),
+      interests: selectedInterests.value
     });
     emit("close");
   }
@@ -501,5 +575,20 @@ onUnmounted(() => {
 .step-leave-to {
   opacity: 0;
   transform: translateX(-20px);
+}
+/* Custom scrollbar for the modal */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(201, 162, 77, 0.3);
+  border-radius: 10px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 162, 77, 0.5);
 }
 </style>

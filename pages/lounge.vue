@@ -15,6 +15,13 @@
     </div>
 
     <div class="relative max-w-7xl mx-auto pt-20">
+      <!-- Flash success message (e.g., after login redirect) -->
+      <SystemState
+        v-if="flash.type.value === 'success' && flash.message.value"
+        type="success"
+        :message="flash.message.value"
+      />
+
       <!-- Header -->
       <div
         v-motion="headerMotion"
@@ -300,23 +307,30 @@
       :isOpen="showEmailVerificationModal"
       :userEmail="authStore.user?.email || ''"
       @close="showEmailVerificationModal = false"
-      @skip="showEmailVerificationModal = false"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "#imports";
 import { useAuthStore } from "~/stores/auth";
+import { useFlashMessage } from "~/composables/useFlashMessage";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const flash = useFlashMessage();
 
 const isGuest = computed(() => !authStore.isAuthenticated);
 const isJoinOpen = ref(false);
 const showEmailVerificationModal = ref(false);
 const message = ref("");
+
+onMounted(() => {
+  if (flash.type.value === "success" && flash.message.value) {
+    window.setTimeout(() => flash.clear(), 3000);
+  }
+});
 
 interface Message {
   id: string;
