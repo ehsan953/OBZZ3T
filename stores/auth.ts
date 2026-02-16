@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
       const config = useRuntimeConfig()
       // Check runtime config first, then fallback to env variable, then default
       return config.public.apiBaseUrl || 
-             process.env.NUXT_PUBLIC_API_BASE_URL || 
+             process.env.NUXT_PUBLIC_API_BASE_URL || 'https://ideal-neat-bunny.ngrok-free.app/api' ||
              'http://localhost:8000/api'
     },
 
