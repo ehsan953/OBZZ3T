@@ -40,6 +40,13 @@
         </OB33ZCard>
       </div>
 
+      <!-- Email Verification Banner (if logged in but not verified) -->
+      <EmailVerificationBanner
+        v-if="!isGuest"
+        @completeProfile="() => {}"
+        @verifyEmail="showEmailVerificationModal = true"
+      />
+
       <!-- Guest Banner -->
       <div v-if="isGuest" v-motion="guestBannerMotion" class="mb-8">
         <OB33ZCard
@@ -287,17 +294,28 @@
     </div>
 
     <Join v-model="isJoinOpen" />
+
+    <!-- Email Verification Modal -->
+    <EmailVerificationModal
+      :isOpen="showEmailVerificationModal"
+      :userEmail="authStore.user?.email || ''"
+      @close="showEmailVerificationModal = false"
+      @skip="showEmailVerificationModal = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "#imports";
+import { useAuthStore } from "~/stores/auth";
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
-const isGuest = ref(true);
+const isGuest = computed(() => !authStore.isAuthenticated);
 const isJoinOpen = ref(false);
+const showEmailVerificationModal = ref(false);
 const message = ref("");
 
 interface Message {

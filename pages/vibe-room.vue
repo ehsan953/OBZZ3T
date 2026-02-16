@@ -36,6 +36,12 @@
         </div>
       </div>
 
+      <!-- Email Verification Banner -->
+      <EmailVerificationBanner
+        @completeProfile="showProfileModal = true"
+        @verifyEmail="showEmailVerificationModal = true"
+      />
+
       <!-- View-Only Warning (if not verified) -->
       <div v-if="!isVerified" v-motion="viewOnlyMotion" class="mb-6">
         <OB33ZCard
@@ -49,11 +55,20 @@
               </p>
             </div>
             <OB33ZButton
+              v-if="!isProfileCompleted"
               variant="secondary"
               class="whitespace-nowrap"
               @click="showProfileModal = true"
             >
               {{ t("completeProfile") }}
+            </OB33ZButton>
+            <OB33ZButton
+              v-else
+              variant="secondary"
+              class="whitespace-nowrap"
+              @click="showEmailVerificationModal = true"
+            >
+              Verify Email
             </OB33ZButton>
           </div>
         </OB33ZCard>
@@ -297,14 +312,24 @@
       @close="showProfileModal = false"
       @complete="handleProfileComplete"
     />
+
+    <!-- Email Verification Modal -->
+    <EmailVerificationModal
+      :isOpen="showEmailVerificationModal"
+      :userEmail="authStore.user?.email || ''"
+      @close="showEmailVerificationModal = false"
+      @skip="showEmailVerificationModal = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "#imports";
+import { useAuthStore } from "~/stores/auth";
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 type Lane = "deep" | "light" | "social";
 
@@ -317,9 +342,19 @@ interface Message {
 }
 
 const selectedLane = ref<Lane>("light");
-const isVerified = ref(false);
 const message = ref("");
 const showProfileModal = ref(false);
+const showEmailVerificationModal = ref(false);
+
+// Check if user is verified from auth store
+const isVerified = computed(() => {
+  return authStore.user?.is_verified === true || authStore.user?.email_verified_at !== null;
+});
+
+// Check if profile is completed
+const isProfileCompleted = computed(() => {
+  return authStore.user?.profile_completed === true;
+});
 
 const messages = ref<Record<Lane, Message[]>>({
   deep: [
@@ -410,9 +445,56 @@ const handleKeyPress = (e: KeyboardEvent) => {
   if (e.key === "Enter") handleSendMessage();
 };
 
-const handleProfileComplete = () => {
-  isVerified.value = true;
-  showProfileModal.value = false;
+const handleProfileComplete = async (profileData: {
+  displayName: string;
+  bio: string;
+  city: string;
+  state: string;
+  birthday: string;
+  phone_number: string;
+  profileImages: File[];
+}) => {
+  try {
+    // Calculate age from birthday if provided
+    let age: string | undefined = undefined;
+    if (profileData.birthday) {
+      try {
+        const birthDate = new Date(profileData.birthday);
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          calculatedAge--;
+        }
+        age = String(calculatedAge);
+      } catch (e) {
+        console.error('Error calculating age:', e);
+      }
+    }
+
+    // Call profile update API with all fields including profile photos
+    await authStore.updateProfile({
+      display_name: profileData.displayName,
+      age: age,
+      city: profileData.city,
+      state: profileData.state,
+      bio: profileData.bio || undefined,
+      phone_number: profileData.phone_number || undefined,
+      interests: undefined, // Can be added later if needed
+      profile_photos: profileData.profileImages, // Now passing the uploaded images
+    });
+
+    // Close profile modal
+    showProfileModal.value = false;
+
+    // Open email verification modal after profile is completed
+    setTimeout(() => {
+      showEmailVerificationModal.value = true;
+    }, 300);
+  } catch (error: any) {
+    // Error is already handled in authStore
+    console.error('Profile update failed:', error);
+  }
 };
 
 const headerMotion = {

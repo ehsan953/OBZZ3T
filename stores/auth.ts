@@ -442,5 +442,90 @@ export const useAuthStore = defineStore('auth', {
         throw error
       }
     },
+
+    /**
+     * Update User Profile
+     */
+    async updateProfile(profileData: {
+      display_name?: string
+      bio?: string
+      city?: string
+      state?: string
+      age?: string
+      phone_number?: string
+      interests?: string[]
+      profile_photos?: File[]
+    }): Promise<{ message?: string; user?: any; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/profile`
+
+        const formData = new FormData()
+        if (profileData.display_name) formData.append('display_name', profileData.display_name)
+        if (profileData.bio) formData.append('bio', profileData.bio)
+        if (profileData.city) formData.append('city', profileData.city)
+        if (profileData.state) formData.append('state', profileData.state)
+        if (profileData.age) formData.append('age', profileData.age)
+        if (profileData.phone_number) formData.append('phone_number', profileData.phone_number)
+        
+        if (profileData.interests) {
+          profileData.interests.forEach(interest => {
+            formData.append('interests[]', interest)
+          })
+        }
+        
+        if (profileData.profile_photos) {
+          profileData.profile_photos.forEach(photo => {
+            formData.append('profile_photos[]', photo)
+          })
+        }
+
+        const response = await $fetch<{ message?: string; user?: any; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+            // Don't set Content-Type for FormData - browser handles it automatically with boundary
+          },
+          body: formData,
+        })
+
+        // Update user data if returned
+        const user = (response as any).data?.user || response.user
+        if (user) {
+          this.user = user
+          if (process.client) {
+            localStorage.setItem('user_data', JSON.stringify(user))
+          }
+        }
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          if (error.data.errors) {
+            const errorMessages = Object.values(error.data.errors).flat()
+            this.error = errorMessages.join(', ') || 'Profile update failed'
+          } else {
+            this.error = error.data.message || error.data.error || 'Profile update failed'
+          }
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
   },
 })
