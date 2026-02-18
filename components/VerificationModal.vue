@@ -119,34 +119,21 @@
                       type="email"
                       :placeholder="t('enterEmail')"
                       class="pl-10"
+                      :disabled="true"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label class="block text-sm text-[#F4F2ED] opacity-80 mb-2">
-                    {{ t('verificationCode') }}
-                  </label>
-                  <OB33ZInput
-                    v-model="verificationData.code"
-                    type="text"
-                    :placeholder="t('enterCode')"
-                    maxlength="6"
-                  />
+                <div v-if="emailError" class="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-sm text-red-400">
+                  {{ emailError }}
                 </div>
-
-                <div class="p-3 rounded-lg bg-[rgba(91,63,214,0.1)] border border-[rgba(91,63,214,0.2)]">
-                  <p class="text-xs text-[#F4F2ED] opacity-80">
-                    {{ t('verificationCodeSent') }}
-                  </p>
+                <div v-else-if="emailInfoMessage" class="p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-sm text-green-400">
+                  {{ emailInfoMessage }}
                 </div>
 
                 <div class="flex gap-3 pt-2">
                   <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
                     {{ t('back') }}
-                  </OB33ZButton>
-                  <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
-                    {{ t('verify') }}
                   </OB33ZButton>
                 </div>
               </div>
@@ -256,10 +243,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useLanguage } from "#imports";
+import { useAuthStore } from "~/stores/auth";
 
 const { t } = useLanguage();
+const authStore = useAuthStore();
 
 interface Props {
   isOpen: boolean;
@@ -275,8 +264,40 @@ const emit = defineEmits<{
 const step = ref<"method" | "email" | "phone" | "photo" | "success">("method");
 const verificationData = ref({
   email: "",
-  phone: "",
+  phone: "",  
   code: "",
+});
+const emailInfoMessage = ref<string | null>(null);
+const emailError = ref<string | null>(null);
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    verificationData.value.email = authStore.user?.email || "";
+    verificationData.value.phone = authStore.user?.phone_number || "";
+    emailInfoMessage.value = null;
+    emailError.value = null;
+  }
+});
+
+watch(step, async (newStep) => {
+  if (!authStore.isAuthenticated) return;
+  try {
+    if (newStep === "email") {
+      emailInfoMessage.value = null;
+      emailError.value = null;
+      const res = await authStore.sendEmailVerification();
+      emailInfoMessage.value = (res as any)?.message || "Verification email sent successfully";
+      setTimeout(() => {
+        step.value = "success";
+      }, 600);
+    } else if (newStep === "phone") {
+      await authStore.sendPhoneVerification();
+    }
+  } catch (e) {
+    if (newStep === "email") {
+      emailError.value = authStore.error || "Failed to send verification email";
+    }
+  }
 });
 
 const handleSubmitCode = () => {

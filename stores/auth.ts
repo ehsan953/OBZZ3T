@@ -58,6 +58,43 @@ export const useAuthStore = defineStore('auth', {
              'http://localhost:8000/api'
     },
 
+    async sendPhoneVerification(): Promise<{ message?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/phone/verification/send`
+
+        const response = await $fetch<{ message?: string; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          this.error = error.data.message || error.data.error || 'Failed to send verification SMS'
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
     async signup(data: SignupData): Promise<SignupResponse> {
       this.isLoading = true
       this.error = null

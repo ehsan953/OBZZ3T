@@ -45,7 +45,7 @@
       <!-- Email Verification Banner -->
       <EmailVerificationBanner
         @completeProfile="showProfileModal = true"
-        @verifyEmail="showEmailVerificationModal = true"
+        @verifyEmail="showVerificationModal = true"
       />
 
       <!-- View-Only Warning (shown for guests, users without completed profile, or unverified users) -->
@@ -73,7 +73,7 @@
               v-else-if="!isVerified"
               variant="secondary"
               class="whitespace-nowrap"
-              @click="showEmailVerificationModal = true"
+              @click="showVerificationModal = true"
             >
               Verify Email
             </OB33ZButton>
@@ -321,10 +321,10 @@
     />
 
     <!-- Email Verification Modal -->
-    <EmailVerificationModal
-      :isOpen="showEmailVerificationModal"
-      :userEmail="authStore.user?.email || ''"
-      @close="showEmailVerificationModal = false"
+    <VerificationModal
+      :isOpen="showVerificationModal"
+      @close="showVerificationModal = false"
+      @verify="() => {}"
     />
   </div>
 </template>
@@ -357,7 +357,7 @@ interface Message {
 const selectedLane = ref<Lane>("light");
 const message = ref("");
 const showProfileModal = ref(false);
-const showEmailVerificationModal = ref(false);
+const showVerificationModal = ref(false);
 
 // Check if user is verified from auth store
 const isVerified = computed(() => {
@@ -507,9 +507,9 @@ const handleProfileComplete = async (profileData: {
     // Close profile modal
     showProfileModal.value = false;
 
-    // Open email verification modal after profile is completed
+    // Open verification modal with 3 options after profile completion
     setTimeout(() => {
-      showEmailVerificationModal.value = true;
+      showVerificationModal.value = true;
     }, 300);
   } catch (error: any) {
     // Error is already handled in authStore
