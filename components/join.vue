@@ -82,6 +82,15 @@ const handleSignup = async () => {
       password_confirmation: confirmPassword.value,
     });
 
+    // Clear auth state so user must sign in explicitly
+    // The signup method was automatically logs the user in, but we want them to sign in manually
+    authStore.token = null;
+    authStore.user = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+    }
+
     signupSuccess.value = "Account created successfully! You can now sign in.";
     
     // Clear all form fields (but keep success message)
