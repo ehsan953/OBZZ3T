@@ -66,7 +66,7 @@
   "verifyViaEmail": "Verifica usando tu correo electrónico",
   "phoneVerification": "Verificación por Teléfono",
   "verifyViaPhone": "Verifica usando tu número de teléfono",
-  "photoVerification": "Verificación por Foto",
+  "documentVerification": "Verificación de documentos",
   "verifyViaPhoto": "Sube una foto de identificación",
   "emailAddress": "Correo Electrónico",
   "phoneNumber": "Número de Teléfono",
