@@ -272,8 +272,11 @@ const emailError = ref<string | null>(null);
 
 watch(() => props.isOpen, (open) => {
   if (open) {
+    // Reset to method selection step when modal opens
+    step.value = "method";
     verificationData.value.email = authStore.user?.email || "";
     verificationData.value.phone = authStore.user?.phone_number || "";
+    verificationData.value.code = "";
     emailInfoMessage.value = null;
     emailError.value = null;
   }

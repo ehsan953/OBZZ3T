@@ -285,13 +285,18 @@ export const useAuthStore = defineStore('auth', {
           },
         })
 
-        // Handle API response structure
+        // Handle API response structure - try multiple possible structures
         const user = (response as any).data?.user || response.user || response.data || response
 
         if (user) {
-          this.user = user
+          // Merge with existing user data to preserve all fields
+          this.user = { ...this.user, ...user }
           if (process.client) {
-            localStorage.setItem('user_data', JSON.stringify(user))
+            localStorage.setItem('user_data', JSON.stringify(this.user))
+          }
+          // Debug log to verify profile_completed status
+          if (process.client) {
+            console.log('User data fetched - profile completed:', this.user?.profile_completed)
           }
         }
 
@@ -617,12 +622,18 @@ export const useAuthStore = defineStore('auth', {
           body: formData,
         })
 
-        // Update user data if returned
-        const user = (response as any).data?.user || response.user
+        // Update user data if returned - handle multiple response structures
+        const user = (response as any).data?.user || response.user || response.data || response
         if (user) {
-          this.user = user
+          // Merge with existing user data to preserve all fields
+          this.user = { ...this.user, ...user }
           if (process.client) {
-            localStorage.setItem('user_data', JSON.stringify(user))
+            localStorage.setItem('user_data', JSON.stringify(this.user))
+          }
+          // Debug log to verify profile_completed status
+          if (process.client) {
+            console.log('Profile updated - user data:', this.user)
+            console.log('Profile completed status:', this.user?.profile_completed)
           }
         }
 

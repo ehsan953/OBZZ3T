@@ -68,14 +68,14 @@
             >
               {{ t("completeProfile") }}
             </OB33ZButton>
-            <!-- For logged-in users with completed profile but not verified: show verify email button -->
+            <!-- For logged-in users with completed profile but not verified: show verify account button -->
             <OB33ZButton
               v-else-if="!isVerified"
               variant="secondary"
               class="whitespace-nowrap"
               @click="showVerificationModal = true"
             >
-              Verify Email
+              Verify Yourself
             </OB33ZButton>
           </div>
         </OB33ZCard>
@@ -418,7 +418,22 @@ const isProfileCompleted = computed(() => {
   if (!authStore.isAuthenticated || !authStore.user) {
     return false;
   }
-  return authStore.user.profile_completed === true;
+  // Check multiple possible field names for profile completion
+  const profileCompleted = authStore.user.profile_completed || 
+                          authStore.user.profileCompleted || 
+                          authStore.user.is_profile_completed;
+  
+  // Debug log to see what we're checking
+  if (process.client && authStore.user) {
+    console.log('Checking profile completion:', {
+      profile_completed: authStore.user.profile_completed,
+      profileCompleted: authStore.user.profileCompleted,
+      is_profile_completed: authStore.user.is_profile_completed,
+      result: profileCompleted === true || profileCompleted === 1
+    });
+  }
+  
+  return profileCompleted === true || profileCompleted === 1;
 });
 
 const messages = ref<Record<Lane, Message[]>>({
@@ -547,7 +562,7 @@ const handleProfileComplete = async (profileData: {
     }
 
     // Call profile update API with all fields including profile photos
-    await authStore.updateProfile({
+    const updateResponse = await authStore.updateProfile({
       display_name: profileData.displayName,
       age: age,
       city: profileData.city,
@@ -558,8 +573,32 @@ const handleProfileComplete = async (profileData: {
       profile_photos: profileData.profileImages, // Now passing the uploaded images
     });
 
+    // Check if profile_completed is already in the response
+    const responseUser = (updateResponse as any)?.data?.user || (updateResponse as any)?.user || (updateResponse as any)?.data;
+    if (responseUser?.profile_completed !== undefined) {
+      console.log('Profile completed status from update response:', responseUser.profile_completed);
+    }
+
+    // Small delay to allow backend to process profile completion
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Refresh user data to ensure profile_completed status is updated
+    // This is important because the API might set profile_completed after the update
+    try {
+      const refreshedUser = await authStore.getCurrentUser();
+      console.log('User data refreshed after profile completion:', refreshedUser);
+      console.log('Profile completed status after refresh:', authStore.user?.profile_completed);
+      console.log('Full user object:', authStore.user);
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+      // Even if refresh fails, continue - the updateProfile might have already updated the user
+    }
+
     // Close profile modal
     showProfileModal.value = false;
+
+    // Small delay to ensure reactivity updates before opening verification modal
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     // Open verification modal with 3 options after profile completion
     setTimeout(() => {
