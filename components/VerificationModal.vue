@@ -85,7 +85,7 @@
                     'w-full p-4 rounded-lg border transition-all text-left',
                     hasEmailOrPhoneVerified
                       ? 'bg-[rgba(244,242,237,0.02)] border-[rgba(201,162,77,0.15)] hover:border-[#C9A24D] hover:bg-[rgba(201,162,77,0.05)]'
-                      : 'bg-[rgba(244,242,237,0.01)] border-[rgba(201,162,77,0.08)] opacity-60 cursor-not-allowed'
+                      : ''
                   ]"
                 >
                   <div class="flex items-center gap-3">
@@ -443,10 +443,10 @@ const handlePhotoVerificationClick = () => {
   photoVerificationError.value = null;
   documentVerificationError.value = null;
   
-  if (!hasEmailOrPhoneVerified.value) {
-    photoVerificationError.value = "Please complete email or phone verification first before document verification.";
-    return;
-  }
+  // if (!hasEmailOrPhoneVerified.value) {
+  //   photoVerificationError.value = "Please complete email or phone verification first before document verification.";
+  //   return;
+  // }
   
   // If verified, proceed to document verification step
   step.value = "photo";
