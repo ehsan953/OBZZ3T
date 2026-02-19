@@ -201,12 +201,17 @@
                   </p>
                 </div>
 
+                <div v-if="phoneError" class="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-sm text-red-400">
+                  {{ phoneError }}
+                </div>
+
                 <div class="flex gap-3 pt-2">
                   <OB33ZButton variant="ghost" @click="handleBackToMethod" class="flex-1">
                     {{ t('back') }}
                   </OB33ZButton>
-                  <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
-                    {{ t('verify') }}
+                  <OB33ZButton variant="primary" @click="handleSubmitCode" :disabled="authStore.isLoading" class="flex-1">
+                    <span v-if="authStore.isLoading">Verifying...</span>
+                    <span v-else>{{ t('verify') }}</span>
                   </OB33ZButton>
                 </div>
               </div>
@@ -290,6 +295,7 @@ const verificationData = ref({
 });
 const emailInfoMessage = ref<string | null>(null);
 const emailError = ref<string | null>(null);
+const phoneError = ref<string | null>(null);
 const photoVerificationError = ref<string | null>(null);
 
 // Check if user has email or phone verified
@@ -304,6 +310,21 @@ const hasEmailOrPhoneVerified = computed(() => {
   const phoneVerified = user.phone_verified_at !== null ||
                        user.is_phone_verified === true ||
                        user.phone_verified === true;
+  
+  if (process.client) {
+    console.log('Checking verification status:', {
+      email_verified_at: user.email_verified_at,
+      is_email_verified: user.is_email_verified,
+      email_verified: user.email_verified,
+      phone_verified_at: user.phone_verified_at,
+      is_phone_verified: user.is_phone_verified,
+      phone_verified: user.phone_verified,
+      emailVerified,
+      phoneVerified,
+      result: emailVerified || phoneVerified
+    });
+  }
+  
   return emailVerified || phoneVerified;
 });
 
@@ -316,6 +337,7 @@ watch(() => props.isOpen, (open) => {
     verificationData.value.code = "";
     emailInfoMessage.value = null;
     emailError.value = null;
+    phoneError.value = null;
     photoVerificationError.value = null;
   }
 });
@@ -347,15 +369,26 @@ watch(() => step.value === "success", async (isSuccess) => {
     // Refresh user data to get updated verification status
     try {
       await authStore.getCurrentUser();
+      console.log('User data refreshed after verification:', authStore.user);
+      console.log('Phone verified status:', authStore.user?.phone_verified_at || authStore.user?.is_phone_verified || authStore.user?.phone_verified);
     } catch (error) {
       console.error('Failed to refresh user data after verification:', error);
     }
   }
 });
 
-const handleBackToMethod = () => {
+const handleBackToMethod = async () => {
   photoVerificationError.value = null;
   step.value = "method";
+  
+  // Refresh user data when going back to method selection to ensure verification status is up to date
+  if (authStore.isAuthenticated) {
+    try {
+      await authStore.getCurrentUser();
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  }
 };
 
 const handlePhotoVerificationClick = () => {
@@ -370,12 +403,35 @@ const handlePhotoVerificationClick = () => {
   step.value = "photo";
 };
 
-const handleSubmitCode = () => {
-  step.value = "success";
-  setTimeout(() => {
-    emit("verify");
-    emit("close");
-  }, 2000);
+const handleSubmitCode = async () => {
+  // If we're in phone verification step, verify the code
+  if (step.value === "phone") {
+    phoneError.value = null;
+    
+    if (!verificationData.value.phone || !verificationData.value.code) {
+      phoneError.value = "Please enter both phone number and verification code";
+      return;
+    }
+
+    try {
+      await authStore.verifyPhoneCode(verificationData.value.phone, verificationData.value.code);
+      // On success, move to success step
+      step.value = "success";
+      setTimeout(() => {
+        emit("verify");
+        emit("close");
+      }, 2000);
+    } catch (error) {
+      phoneError.value = authStore.error || "Failed to verify phone. Please check your code and try again.";
+    }
+  } else {
+    // For photo verification or other steps
+    step.value = "success";
+    setTimeout(() => {
+      emit("verify");
+      emit("close");
+    }, 2000);
+  }
 };
 
 const backdropMotion = {
