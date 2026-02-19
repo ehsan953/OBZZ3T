@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useI18n } from "#imports";
 import { useAuthStore } from "~/stores/auth";
 import { useRouter } from "vue-router";
@@ -8,7 +8,7 @@ const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
 
-defineProps<{ modelValue: boolean }>();
+const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: boolean): void }>();
 
 const close = () => emit("update:modelValue", false);
@@ -21,6 +21,25 @@ const confirmPassword = ref("");
 
 const isAuthOpen = ref(false);
 const signupError = ref<string | null>(null);
+const signupSuccess = ref<string | null>(null);
+
+// Clear all form fields
+const clearForm = () => {
+  fullName.value = "";
+  userName.value = "";
+  email.value = "";
+  password.value = "";
+  confirmPassword.value = "";
+  signupError.value = null;
+  signupSuccess.value = null;
+};
+
+// Watch for modal opening and clear form
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    clearForm();
+  }
+});
 
 const openSignIn = () => {
   close();
@@ -44,8 +63,9 @@ const isFormValid = computed(() => {
 });
 
 const handleSignup = async () => {
-  // Reset error
+  // Reset error and success
   signupError.value = null;
+  signupSuccess.value = null;
 
   // Validate form
   if (!isFormValid.value) {
@@ -62,9 +82,19 @@ const handleSignup = async () => {
       password_confirmation: confirmPassword.value,
     });
 
-    // Success - close modal
-    // User will need to login and complete profile before email verification
-    close();
+    signupSuccess.value = "Account created successfully! You can now sign in.";
+    
+    // Clear all form fields (but keep success message)
+    fullName.value = "";
+    userName.value = "";
+    email.value = "";
+    password.value = "";
+    confirmPassword.value = "";
+    signupError.value = null;
+    
+    setTimeout(() => {
+      close();
+    }, 2000);
     
   } catch (error: any) {
     signupError.value = authStore.error || "Signup failed. Please try again.";
@@ -358,6 +388,14 @@ const handleSignup = async () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              <!-- Success Message -->
+              <div
+                v-if="signupSuccess"
+                class="mt-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400"
+              >
+                {{ signupSuccess }}
               </div>
 
               <!-- Error Message -->
