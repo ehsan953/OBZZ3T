@@ -44,7 +44,7 @@
 
       <!-- Email Verification Banner -->
       <EmailVerificationBanner
-        @completeProfile="showProfileModal = true"
+        @completeProfile="handleCompleteProfileClick"
         @verifyEmail="showVerificationModal = true"
       />
 
@@ -64,7 +64,7 @@
               v-if="!isProfileCompleted"
               variant="secondary"
               class="whitespace-nowrap"
-              @click="showProfileModal = true"
+              @click="handleCompleteProfileClick"
             >
               {{ t("completeProfile") }}
             </OB33ZButton>
@@ -326,11 +326,56 @@
       @close="showVerificationModal = false"
       @verify="() => {}"
     />
+
+    <!-- Auth Required Modal -->
+    <Teleport to="body">
+      <Transition name="modal-backdrop">
+        <div
+          v-if="showAuthRequiredModal"
+          class="fixed inset-0 bg-[rgba(11,11,13,0.95)] backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          @click="showAuthRequiredModal = false"
+        >
+          <div
+            class="w-full max-w-md"
+            @click.stop
+          >
+            <OB33ZCard :glow="true">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h2 class="text-2xl text-[#C9A24D] mb-1">
+                    Sign In Required
+                  </h2>
+                  <p class="text-sm text-[#F4F2ED] opacity-60">
+                    Please sign in to complete your profile
+                  </p>
+                </div>
+                <button
+                  @click="showAuthRequiredModal = false"
+                  class="text-[#F4F2ED] opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="mb-6">
+                <p class="text-[#F4F2ED] opacity-80 mb-4">
+                  You need to sign in first before you can complete your profile.
+                </p>
+              </div>
+
+              
+            </OB33ZCard>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "#imports";
 import { useAuthStore } from "~/stores/auth";
 import { useFlashMessage } from "~/composables/useFlashMessage";
@@ -358,6 +403,7 @@ const selectedLane = ref<Lane>("light");
 const message = ref("");
 const showProfileModal = ref(false);
 const showVerificationModal = ref(false);
+const showAuthRequiredModal = ref(false);
 
 // Check if user is verified from auth store
 const isVerified = computed(() => {
@@ -462,6 +508,14 @@ const handleSendMessage = () => {
 
 const handleKeyPress = (e: KeyboardEvent) => {
   if (e.key === "Enter") handleSendMessage();
+};
+
+const handleCompleteProfileClick = () => {
+  if (!authStore.isAuthenticated) {
+    showAuthRequiredModal.value = true;
+  } else {
+    showProfileModal.value = true;
+  }
 };
 
 const handleProfileComplete = async (profileData: {
