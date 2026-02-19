@@ -95,6 +95,65 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    /**
+     * Verify Phone Verification Code
+     */
+    async verifyPhoneCode(phone: string, code: string): Promise<{ message?: string; user?: any; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/phone/verification/verify`
+
+        const formData = new FormData()
+        formData.append('phone', phone)
+        formData.append('code', code)
+
+        const response = await $fetch<{ message?: string; user?: any; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+          body: formData,
+        })
+
+        // Update user data if returned
+        const user = (response as any).data?.user || response.user
+        if (user) {
+          this.user = { ...this.user, ...user }
+          if (process.client) {
+            localStorage.setItem('user_data', JSON.stringify(this.user))
+          }
+        }
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          if (error.data.errors) {
+            const errorMessages = Object.values(error.data.errors).flat()
+            this.error = errorMessages.join(', ') || 'Phone verification failed'
+          } else {
+            this.error = error.data.message || error.data.error || 'Phone verification failed'
+          }
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
     async signup(data: SignupData): Promise<SignupResponse> {
       this.isLoading = true
       this.error = null
