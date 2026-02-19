@@ -81,8 +81,13 @@
 
                 <button
                   v-motion="{ initial: { scale: 1 }, enter: { scale: 1 } }"
-                  @click="step = 'photo'"
-                  class="w-full p-4 rounded-lg bg-[rgba(244,242,237,0.02)] border border-[rgba(201,162,77,0.15)] hover:border-[#C9A24D] hover:bg-[rgba(201,162,77,0.05)] transition-all text-left"
+                  @click="handlePhotoVerificationClick"
+                  :class="[
+                    'w-full p-4 rounded-lg border transition-all text-left',
+                    hasEmailOrPhoneVerified
+                      ? 'bg-[rgba(244,242,237,0.02)] border-[rgba(201,162,77,0.15)] hover:border-[#C9A24D] hover:bg-[rgba(201,162,77,0.05)]'
+                      : 'bg-[rgba(244,242,237,0.01)] border-[rgba(201,162,77,0.08)] opacity-60 cursor-not-allowed'
+                  ]"
                 >
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-[rgba(201,162,77,0.2)] flex items-center justify-center">
@@ -91,12 +96,28 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     </div>
-                    <div>
-                      <div class="text-[#F4F2ED] font-medium mb-1">{{ t('photoVerification') }}</div>
-                      <div class="text-xs text-[#F4F2ED] opacity-60">{{ t('verifyViaPhoto') }}</div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2">
+                        <div class="text-[#F4F2ED] font-medium mb-1">{{ t('photoVerification') }}</div>
+                        <svg v-if="!hasEmailOrPhoneVerified" class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <div class="text-xs text-[#F4F2ED] opacity-60">
+                        <span v-if="hasEmailOrPhoneVerified">{{ t('verifyViaPhoto') }}</span>
+                        <span v-else>Requires email or phone verification first</span>
+                      </div>
                     </div>
                   </div>
                 </button>
+                
+                <!-- Error message for photo verification requirement -->
+                <div
+                  v-if="photoVerificationError"
+                  class="p-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-400"
+                >
+                  {{ photoVerificationError }}
+                </div>
               </div>
 
               <!-- Email Verification -->
@@ -132,7 +153,7 @@
                 </div>
 
                 <div class="flex gap-3 pt-2">
-                  <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
+                  <OB33ZButton variant="ghost" @click="handleBackToMethod" class="flex-1">
                     {{ t('back') }}
                   </OB33ZButton>
                 </div>
@@ -181,7 +202,7 @@
                 </div>
 
                 <div class="flex gap-3 pt-2">
-                  <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
+                  <OB33ZButton variant="ghost" @click="handleBackToMethod" class="flex-1">
                     {{ t('back') }}
                   </OB33ZButton>
                   <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
@@ -212,7 +233,7 @@
                 </div>
 
                 <div class="flex gap-3 pt-2">
-                  <OB33ZButton variant="ghost" @click="step = 'method'" class="flex-1">
+                  <OB33ZButton variant="ghost" @click="handleBackToMethod" class="flex-1">
                     {{ t('back') }}
                   </OB33ZButton>
                   <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
@@ -243,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useLanguage } from "#imports";
 import { useAuthStore } from "~/stores/auth";
 
@@ -269,6 +290,22 @@ const verificationData = ref({
 });
 const emailInfoMessage = ref<string | null>(null);
 const emailError = ref<string | null>(null);
+const photoVerificationError = ref<string | null>(null);
+
+// Check if user has email or phone verified
+const hasEmailOrPhoneVerified = computed(() => {
+  if (!authStore.user) return false;
+  const user = authStore.user;
+  // Check for email verification
+  const emailVerified = user.email_verified_at !== null || 
+                       user.is_email_verified === true ||
+                       user.email_verified === true;
+  // Check for phone verification
+  const phoneVerified = user.phone_verified_at !== null ||
+                       user.is_phone_verified === true ||
+                       user.phone_verified === true;
+  return emailVerified || phoneVerified;
+});
 
 watch(() => props.isOpen, (open) => {
   if (open) {
@@ -279,6 +316,7 @@ watch(() => props.isOpen, (open) => {
     verificationData.value.code = "";
     emailInfoMessage.value = null;
     emailError.value = null;
+    photoVerificationError.value = null;
   }
 });
 
@@ -302,6 +340,35 @@ watch(step, async (newStep) => {
     }
   }
 });
+
+// Refresh user data after successful verification to update photo verification button
+watch(() => step.value === "success", async (isSuccess) => {
+  if (isSuccess && authStore.isAuthenticated) {
+    // Refresh user data to get updated verification status
+    try {
+      await authStore.getCurrentUser();
+    } catch (error) {
+      console.error('Failed to refresh user data after verification:', error);
+    }
+  }
+});
+
+const handleBackToMethod = () => {
+  photoVerificationError.value = null;
+  step.value = "method";
+};
+
+const handlePhotoVerificationClick = () => {
+  photoVerificationError.value = null;
+  
+  if (!hasEmailOrPhoneVerified.value) {
+    photoVerificationError.value = "Please complete email or phone verification first before document verification.";
+    return;
+  }
+  
+  // If verified, proceed to photo verification step
+  step.value = "photo";
+};
 
 const handleSubmitCode = () => {
   step.value = "success";
