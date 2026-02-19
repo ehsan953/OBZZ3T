@@ -96,6 +96,86 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
+     * Start Document Verification
+     */
+    async startDocumentVerification(): Promise<{ url?: string; verification_url?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/verification/start`
+
+        const response = await $fetch<{ url?: string; verification_url?: string; data?: any; [key: string]: any }>(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          this.error = error.data.message || error.data.error || 'Failed to start document verification'
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
+    /**
+     * Get Document Verification Status
+     */
+    async getDocumentVerificationStatus(): Promise<{ status?: string; verification_status?: string; [key: string]: any }> {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        if (!this.token) {
+          throw new Error('Authentication required')
+        }
+
+        const baseUrl = this.getApiBaseUrl()
+        const url = `${baseUrl}/verification/status`
+
+        const response = await $fetch<{ status?: string; verification_status?: string; data?: any; [key: string]: any }>(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+          },
+        })
+
+        this.isLoading = false
+        return response
+      } catch (error: any) {
+        this.isLoading = false
+        
+        if (error.data) {
+          this.error = error.data.message || error.data.error || 'Failed to get verification status'
+        } else if (error.message) {
+          this.error = error.message
+        } else {
+          this.error = 'An unexpected error occurred'
+        }
+
+        throw error
+      }
+    },
+
+    /**
      * Verify Phone Verification Code
      */
     async verifyPhoneCode(phone: string, code: string): Promise<{ message?: string; user?: any; [key: string]: any }> {

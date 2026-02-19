@@ -215,9 +215,30 @@
                 </div>
               </div>
 
-              <!-- Photo Verification -->
+              <!-- Document Verification -->
               <div v-else-if="step === 'photo'" key="photo" class="space-y-4">
-                <div class="border-2 border-dashed border-[rgba(201,162,77,0.3)] rounded-lg p-8 text-center">
+                <div v-if="documentVerificationStatus === 'checking'" class="text-center py-8">
+                  <div class="w-16 h-16 border-4 border-[#C9A24D] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p class="text-sm text-[#F4F2ED] opacity-80">Checking verification status...</p>
+                </div>
+                
+                <div v-else-if="documentVerificationStatus === 'failed'" class="space-y-4">
+                  <div class="p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-center">
+                    <svg class="w-12 h-12 text-red-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-lg text-red-400 mb-2">Verification Failed</h3>
+                    <p class="text-sm text-[#F4F2ED] opacity-80 mb-4">
+                      Your document verification was not successful. Please try again.
+                    </p>
+                    <OB33ZButton variant="primary" @click="handleStartDocumentVerification" :disabled="authStore.isLoading">
+                      <span v-if="authStore.isLoading">Starting...</span>
+                      <span v-else>Try Again</span>
+                    </OB33ZButton>
+                  </div>
+                </div>
+
+                <div v-else class="border-2 border-dashed border-[rgba(201,162,77,0.3)] rounded-lg p-8 text-center">
                   <svg
                     class="w-12 h-12 text-[#C9A24D] mx-auto mb-3"
                     fill="none"
@@ -227,21 +248,27 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <p class="text-sm text-[#F4F2ED] mb-2">{{ t('uploadPhoto') }}</p>
+                  <p class="text-sm text-[#F4F2ED] mb-2">{{ t('documentVerification') }}</p>
                   <p class="text-xs text-[#F4F2ED] opacity-60 mb-4">
-                    {{ t('photoInstructions') }}
+                    Click below to start document verification. You will be redirected to complete the process.
                   </p>
-                  <OB33ZButton variant="secondary">
-                    {{ t('chooseFile') }}
+                  <OB33ZButton 
+                    variant="secondary" 
+                    @click="handleStartDocumentVerification"
+                    :disabled="authStore.isLoading"
+                  >
+                    <span v-if="authStore.isLoading">Starting...</span>
+                    <span v-else>Start Verification</span>
                   </OB33ZButton>
                 </div>
 
-                <div class="flex gap-3 pt-2">
+                <div v-if="documentVerificationError" class="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-sm text-red-400">
+                  {{ documentVerificationError }}
+                </div>
+
+                <div v-if="documentVerificationStatus !== 'checking' && documentVerificationStatus !== 'failed'" class="flex gap-3 pt-2">
                   <OB33ZButton variant="ghost" @click="handleBackToMethod" class="flex-1">
                     {{ t('back') }}
-                  </OB33ZButton>
-                  <OB33ZButton variant="primary" @click="handleSubmitCode" class="flex-1">
-                    {{ t('submit') }}
                   </OB33ZButton>
                 </div>
               </div>
@@ -297,6 +324,8 @@ const emailInfoMessage = ref<string | null>(null);
 const emailError = ref<string | null>(null);
 const phoneError = ref<string | null>(null);
 const photoVerificationError = ref<string | null>(null);
+const documentVerificationError = ref<string | null>(null);
+const documentVerificationStatus = ref<'idle' | 'checking' | 'failed' | 'redirecting'>('idle');
 
 // Check if user has email or phone verified
 const hasEmailOrPhoneVerified = computed(() => {
@@ -339,6 +368,11 @@ watch(() => props.isOpen, (open) => {
     emailError.value = null;
     phoneError.value = null;
     photoVerificationError.value = null;
+    documentVerificationError.value = null;
+    documentVerificationStatus.value = 'idle';
+  } else {
+    // When modal closes, reset document verification status
+    documentVerificationStatus.value = 'idle';
   }
 });
 
@@ -355,6 +389,9 @@ watch(step, async (newStep) => {
       }, 600);
     } else if (newStep === "phone") {
       await authStore.sendPhoneVerification();
+    } else if (newStep === "photo") {
+      // Check verification status when entering document verification step
+      checkDocumentVerificationStatus();
     }
   } catch (e) {
     if (newStep === "email") {
@@ -404,14 +441,85 @@ const handleBackToMethod = async () => {
 
 const handlePhotoVerificationClick = () => {
   photoVerificationError.value = null;
+  documentVerificationError.value = null;
   
   if (!hasEmailOrPhoneVerified.value) {
     photoVerificationError.value = "Please complete email or phone verification first before document verification.";
     return;
   }
   
-  // If verified, proceed to photo verification step
+  // If verified, proceed to document verification step
   step.value = "photo";
+};
+
+const handleStartDocumentVerification = async () => {
+  documentVerificationError.value = null;
+  documentVerificationStatus.value = 'redirecting';
+  
+  try {
+    const response = await authStore.startDocumentVerification();
+    
+    // Get the verification URL from response
+    const verificationUrl = response.url || 
+                           response.verification_url || 
+                           (response.data && (response.data.url || response.data.verification_url));
+    
+    if (verificationUrl) {
+      // Redirect to the verification URL
+      if (typeof window !== 'undefined') {
+        window.location.href = verificationUrl;
+      }
+    } else {
+      throw new Error('No verification URL received from server');
+    }
+  } catch (error) {
+    documentVerificationStatus.value = 'idle';
+    documentVerificationError.value = authStore.error || "Failed to start document verification. Please try again.";
+  }
+};
+
+// Check verification status when modal opens (in case user returned from verification)
+const checkDocumentVerificationStatus = async () => {
+  if (step.value === 'photo' && documentVerificationStatus.value !== 'checking') {
+    documentVerificationStatus.value = 'checking';
+    documentVerificationError.value = null;
+    
+    try {
+      const response = await authStore.getDocumentVerificationStatus();
+      const status = response.status || 
+                    response.verification_status || 
+                    (response.data && (response.data.status || response.data.verification_status));
+      
+      if (status === 'verified' || status === 'success' || status === 'approved') {
+        // Verification successful - refresh user data
+        try {
+          await authStore.getCurrentUser();
+        } catch (error) {
+          console.error('Failed to refresh user data after document verification:', error);
+        }
+        step.value = 'success';
+        emit('verify');
+        // Will auto-return to method selection after 2.5 seconds
+      } else if (status === 'failed' || status === 'rejected' || status === 'declined') {
+        // Verification failed
+        documentVerificationStatus.value = 'failed';
+      } else if (status === 'pending' || status === 'processing' || status === 'in_progress') {
+        // Still processing, check again after a delay
+        documentVerificationStatus.value = 'idle';
+        setTimeout(() => {
+          if (step.value === 'photo') {
+            checkDocumentVerificationStatus();
+          }
+        }, 3000);
+      } else {
+        // Unknown status or not started
+        documentVerificationStatus.value = 'idle';
+      }
+    } catch (error) {
+      documentVerificationStatus.value = 'idle';
+      // Don't show error if status check fails - user might not have started verification yet
+    }
+  }
 };
 
 const handleSubmitCode = async () => {
@@ -434,7 +542,7 @@ const handleSubmitCode = async () => {
     }
   } else {
     // For photo verification or other steps
-    step.value = "success";
+  step.value = "success";
     emit("verify");
   }
 };
