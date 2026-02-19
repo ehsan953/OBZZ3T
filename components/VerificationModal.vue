@@ -5,7 +5,7 @@
         v-if="isOpen"
         v-motion="backdropMotion"
         class="fixed inset-0 bg-[rgba(11,11,13,0.95)] backdrop-blur-sm z-50 flex items-center justify-center p-6"
-        @click="step !== 'success' && $emit('close')"
+        @click="$emit('close')"
       >
         <div
           v-motion="modalMotion"
@@ -26,7 +26,6 @@
                 </div>
               </div>
               <button
-                v-if="step !== 'success'"
                 @click="$emit('close')"
                 class="text-[#F4F2ED] opacity-60 hover:opacity-100 transition-opacity"
               >
@@ -258,7 +257,8 @@
                   </svg>
                 </div>
                 <h3 class="text-xl text-[#C9A24D] mb-2">{{ t('verificationSuccess') }}</h3>
-                <p class="text-sm text-[#F4F2ED] opacity-80">{{ t('youAreNowVerified') }}</p>
+                <p class="text-sm text-[#F4F2ED] opacity-80 mb-4">{{ t('youAreNowVerified') }}</p>
+                <p class="text-xs text-[#F4F2ED] opacity-60">Returning to verification options...</p>
               </div>
             </Transition>
           </OB33ZCard>
@@ -363,7 +363,7 @@ watch(step, async (newStep) => {
   }
 });
 
-// Refresh user data after successful verification to update photo verification button
+// Refresh user data after successful verification and auto-return to method selection
 watch(() => step.value === "success", async (isSuccess) => {
   if (isSuccess && authStore.isAuthenticated) {
     // Refresh user data to get updated verification status
@@ -374,6 +374,17 @@ watch(() => step.value === "success", async (isSuccess) => {
     } catch (error) {
       console.error('Failed to refresh user data after verification:', error);
     }
+    
+    // After 2.5 seconds, automatically return to method selection
+    setTimeout(() => {
+      step.value = "method";
+      // Clear any errors
+      emailError.value = null;
+      phoneError.value = null;
+      photoVerificationError.value = null;
+      // Reset verification data
+      verificationData.value.code = "";
+    }, 2500);
   }
 });
 
@@ -415,22 +426,16 @@ const handleSubmitCode = async () => {
 
     try {
       await authStore.verifyPhoneCode(verificationData.value.phone, verificationData.value.code);
-      // On success, move to success step
+      // On success, move to success step (will auto-return to method selection after 2 seconds)
       step.value = "success";
-      setTimeout(() => {
-        emit("verify");
-        emit("close");
-      }, 2000);
+      emit("verify");
     } catch (error) {
       phoneError.value = authStore.error || "Failed to verify phone. Please check your code and try again.";
     }
   } else {
     // For photo verification or other steps
     step.value = "success";
-    setTimeout(() => {
-      emit("verify");
-      emit("close");
-    }, 2000);
+    emit("verify");
   }
 };
 

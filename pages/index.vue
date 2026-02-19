@@ -53,7 +53,7 @@
 
           <button
             type="button"
-            @click="handleEnter('/lounge')"
+            @click="isAuthModalOpen = true"
             class="w-[260px] rounded-lg bg-transparent px-6 py-3 text-sm font-roboto font-medium tracking-widest text-[#F4F2ED] shadow-[0_0_0_1px_rgba(201,162,77,0.10)] transition hover:bg-[#C9A24D]/10 active:scale-[0.99] mb-[48px]"
           >
             {{ t("nav.signIn") }}
@@ -80,6 +80,11 @@
     </div>
 
     <Join v-model="isJoinOpen" />
+    <AuthModal
+      :isOpen="isAuthModalOpen"
+      @close="isAuthModalOpen = false"
+      @success="handleAuthSuccess"
+    />
   </div>
 </template>
 
@@ -87,12 +92,14 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "#imports";
 import { useTransitionScreen } from "~/composables/useTransitionScreen";
+import AuthModal from "~/components/AuthModal.vue";
 
 const { t } = useI18n();
 const { startTransition } = useTransitionScreen();
 
 const cursorGlow = ref<HTMLElement | null>(null);
 const isJoinOpen = ref(false);
+const isAuthModalOpen = ref(false);
 
 let raf = 0;
 let x = 0;
@@ -128,6 +135,10 @@ onBeforeUnmount(() => {
 
 const handleEnter = (path: string) => {
   startTransition(path);
+};
+
+const handleAuthSuccess = () => {
+  isAuthModalOpen.value = false;
 };
 </script>
 
